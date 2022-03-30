@@ -1,0 +1,21 @@
+body{
+	padding: 1em;
+	margin: 0;
+}
+input{
+	display: inline;
+}
+details{
+	padding-left: .5em;
+	margin-bottom: .3em;
+}
+.fakelinktext{
+	text-decoration: underline;
+	color: #3366BB;
+	cursor: pointer;
+}
+.fakelinktext:hover{
+	text-decoration: underline;
+	color: #133f8b;
+	cursor: pointer;
+}

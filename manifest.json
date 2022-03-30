@@ -1,0 +1,42 @@
+{
+	"manifest_version": 2,
+	"name": "E6 Easy Send",
+	"description": "An addon that allows stuff to be saved from e621.net into discord with a single button press",
+	"version": "1.1.0",
+
+	"browser_specific_settings":{
+		"gecko":{
+			"id": "e6easysend@noone.net",
+			"strict_min_version": "42.0"
+		}
+	},
+
+
+	"icons": {
+		"48": "icons/icon-48.png",
+		"96": "icons/icon-96.png"
+	},
+
+	"permissions": [
+		"*://e621.net/*", "webRequest",
+		"*://discord.com/*", "webRequest",
+		"storage"
+	],
+
+	"content_scripts": [
+		{
+			"matches": ["https://*.e621.net/posts/*"],
+			"js": ["src/js/main.js"]
+		}
+	],
+
+	"browser_action": {
+		"browser_style": true,
+		"default_title": "E621 Auto Send",
+		"default_popup": "src/html/main_popup_menu.html",
+		"default_icon": {
+			"48": "icons/icon-48.png",
+			"96": "icons/icon-96.png"
+		}
+	}
+}

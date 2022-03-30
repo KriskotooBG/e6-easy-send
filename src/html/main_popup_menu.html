@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width">
+		
+		<link rel="stylesheet" href="../style/css/popup_menu-main.css">
+		<script src="../js/popup_menu.js" defer></script>
+	</head>
+	<body>
+		<div id="console">
+
+		</div>
+
+		<div style="white-space: nowrap;">
+			<label for="webhookURLinput">Webhook URL: </label>
+			<input type="url" id="webhookURLinput" placeholder="Webhook URL">
+		</div>
+		<hr style="width:100%; margin-bottom: .7em;">
+
+
+		<label>Send as:</label><br>
+		<div>
+			<input type="radio" name="sendAsRadio" id="sendAsEmbed" value="embed">
+			<label for="sendAsEmbed">Embed</label>
+		</div>
+		<div>
+			<input type="radio" name="sendAsRadio" id="sendAsText" value="text" checked="true">
+			<label for="sendAsText">Text</label>
+		</div>
+		<hr style="width:100%; margin-bottom: .2em;">
+
+
+		<div>
+			<input type="checkbox" id="sendOnDBClick" checked="true">
+			<label for="sendOnDBClick">Send on image double click</label>
+		</div>
+
+		<div>
+			<input type="checkbox" id="sendOnView">
+			<label for="sendOnView">Send automatically on view<br><span style="font-size: .8em; margin-left: 3em;">(sends any post you open)</span></label>
+		</div>
+
+		<div>
+			<input type="checkbox" id="sendUsername">
+			<label for="sendUsername">Send e621 username</label>
+		</div>
+	
+
+		
+		<details style="margin-top: .5em;">
+			<summary>Advanced</summary>
+
+
+			<details>
+				<summary>Send button</summary>
+
+				<details>
+					<summary>Colors</summary>
+				
+					<a target="_blank" href="https://www.google.com/search?q=color+picker">Color Picker</a><br>
+					<div>
+						<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnBaseColorCustom" value="#5865F2" data-defval="#5865F2">
+						<label for="advSet_sendbtn_clrs_btnBaseColorCustom">Send button color</label>
+					</div>
+					<div>
+						<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnPressedColorCustom" value="#2e39ab" data-defval="#2e39ab">
+						<label for="advSet_sendbtn_clrs_btnPressedColorCustom">Send button color - pressed/hover</label>
+					</div>
+					<div>
+						<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnSentColorCustom" value="#1b853c" data-defval="#1b853c">
+						<label for="advSet_sendbtn_clrs_btnSentColorCustom">Send button color - sent successfully</label>
+					</div>
+					<div>
+						<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnTextColorCustom" value="#ffffff" data-defval="#ffffff">
+						<label for="advSet_sendbtn_clrs_btnTextColorCustom">Send button text color</label>
+					</div>
+
+					<span style="margin-top: .2em;" class="fakelinktext" id="advSet_sendbtn_clrs_defreset">Reset Defaults</span>
+				</details>
+				<div>
+					<input type="text" maxlength="60" id="advSet_sendbtn_baseText" value="Send to discord" data-defval="Send to discord">
+					<label for="advSet_sendbtn_baseText">Send button text</label>
+				</div>
+				<div>
+					<input type="text" maxlength="60" id="advSet_sendbtn_baseTextSent" value="Sent to discord" data-defval="Sent to discord">
+					<label for="advSet_sendbtn_baseTextSent">Send button text - sent successfully</label>
+				</div>
+
+				<span style="margin-top: .2em;" class="fakelinktext" id="advSet_sendbtn_defreset">Reset Defaults</span>
+			</details>
+
+
+			<details>
+				<summary>Webhook appearance</summary>
+
+				<div>
+					<input type="text" minlength="2" maxlength="32" id="advSet_webhook_displayname" value="E6 Easy Send" data-defval="E6 Easy Send">
+					<label for="advSet_webhook_displayname">Webhook display name</label>
+				</div>
+
+				<label>Embed color:      (this only has an effect if "Send as" is set to "embed")</label><br>
+				<div style="margin-left: .5em;">
+					<input type="radio" name="advSetWebhookColorRadio" id="advSet_webhook_colorSelector_default" value="default" checked="true">
+					<label for="advSet_webhook_colorSelector_default">Default</label>
+				</div>
+				<div style="margin-left: .5em;">
+					<input type="radio" name="advSetWebhookColorRadio" id="advSet_webhook_colorSelector_random" value="random">
+					<label for="advSet_webhook_colorSelector_random">Random</label>
+				</div>
+				<div style="margin-left: .5em;">
+					<input type="radio" name="advSetWebhookColorRadio" id="advSet_webhook_colorSelector_custom" value="custom">
+					<label for="advSet_webhook_colorSelector_custom">Custom: </label>
+					<input type="text" minlength="7" maxlength="7" size="7" id="advSet_webhook_colorSelector_custom_input" value="#944230"  data-defval="#944230" disabled>
+				</div>
+				<span style="margin-top: .2em;" class="fakelinktext" id="advSet_webhook_defreset">Reset Defaults</span>
+			</details>
+		</details>
+	
+	</body>
+</html>
