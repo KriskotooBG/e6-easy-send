@@ -8,6 +8,25 @@ const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundC
 
 
 (async () => {
+	const curTheme = await browser.theme.getCurrent() || null;
+	if(curTheme && curTheme.colors){
+		const styleTag = document.createElement("style");
+		styleTag.innerHTML = 
+			`
+			body{
+				${curTheme.colors.popup_text ? "color: " + curTheme.colors.popup_text + ";": ""}
+				${curTheme.colors.popup ? "background-color: " + curTheme.colors.popup + ";": ""}
+			}
+			input[type="text"], input[type="url"]{
+				${curTheme.colors.input_color ? "color: " + curTheme.colors.input_color + ";" : ""}
+				${curTheme.colors.input_background ? "background-color: " + curTheme.colors.input_background + ";" : ""}
+				${curTheme.colors.input_border ? "border-color: " + curTheme.colors.input_border + ";" : ""}
+			}
+			`;
+		document.head.appendChild(styleTag);
+	}
+
+
 	const storedSettings = await browser.storage.local.get() || {};
 
 	if(!storedSettings.hasOwnProperty("sv")) storedSettings.sv = 1;
@@ -40,7 +59,7 @@ const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundC
 	} 
 	
 	
-	_("webhookURLinput").value = storedSettings.webhookURL;
+	_("webhookURL").value = storedSettings.webhookURL;
 	_("sendAsEmbed").checked = (storedSettings.sendAs === "embed");
 	_("sendAsText").checked = (storedSettings.sendAs === "text");
 	_("sendOnDBClick").checked = storedSettings.sendOnDBClick;
@@ -78,6 +97,17 @@ function checkHexColorValidity(hex){
 }
 
 
+function registerListeners(...inputData){
+	inputData.forEach(([id, listener, prop]) => {
+		_(id).addEventListener(listener, (e) => {
+			e.target.disabled = true;
+			
+			browser.storage.local.set({[id]: e.target[prop]})
+			.then(() => {e.target.disabled = false})
+			.catch(setErrorState);
+		});
+	});
+}
 
 
 
@@ -87,13 +117,20 @@ function checkHexColorValidity(hex){
 
 /*===================== UI event Listeners =====================*/
 
-_("webhookURLinput").addEventListener("change", (e) => {
-	e.target.disabled = true;
+registerListeners(
+	["webhookURL", "change", "value"],
+	["sendOnDBClick", "click", "checked"],
+	["sendOnView", "click", "checked"],
+	["sendUsername", "click", "checked"],
+	["advSet_sendbtn_clrs_btnBaseColorCustom", "change", "value"],
+	["advSet_sendbtn_clrs_btnPressedColorCustom", "change", "value"],
+	["advSet_sendbtn_clrs_btnSentColorCustom", "change", "value"],
+	["advSet_sendbtn_clrs_btnTextColorCustom", "change", "value"],
+	["advSet_sendbtn_baseText", "change", "value"],
+	["advSet_sendbtn_baseTextSent", "change", "value"],
+	["advSet_webhook_displayname", "change", "value"]
+);
 
-	browser.storage.local.set({webhookURL: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
 
 
 const onSendAsChange = (e) => {
@@ -110,98 +147,6 @@ const onSendAsChange = (e) => {
 _("sendAsEmbed").addEventListener("click", onSendAsChange);
 _("sendAsText").addEventListener("click", onSendAsChange);
 
-
-_("sendOnDBClick").addEventListener("click", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({sendOnDBClick: e.target.checked})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-
-
-_("sendOnView").addEventListener("click", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({sendOnView: e.target.checked})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-})
-
-
-
-_("sendUsername").addEventListener("click", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({sendUsername: e.target.checked})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-
-
-
-
-_("advSet_sendbtn_clrs_btnBaseColorCustom").addEventListener("change", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({advSet_sendbtn_clrs_btnBaseColorCustom: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-_("advSet_sendbtn_clrs_btnPressedColorCustom").addEventListener("change", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({advSet_sendbtn_clrs_btnPressedColorCustom: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-_("advSet_sendbtn_clrs_btnSentColorCustom").addEventListener("change", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({advSet_sendbtn_clrs_btnSentColorCustom: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-_("advSet_sendbtn_clrs_btnTextColorCustom").addEventListener("change", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({advSet_sendbtn_clrs_btnTextColorCustom: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-_("advSet_sendbtn_baseText").addEventListener("change", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({advSet_sendbtn_baseText: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-_("advSet_sendbtn_baseTextSent").addEventListener("change", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({advSet_sendbtn_baseTextSent: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
-
-
-
-
-
-_("advSet_webhook_displayname").addEventListener("change", (e) => {
-	e.target.disabled = true;
-
-	browser.storage.local.set({advSet_webhook_displayname: e.target.value})
-	.then(() => {e.target.disabled = false})
-	.catch(setErrorState);
-});
 
 const onWebhookClrChange = (e) => {
 	_("advSet_webhook_colorSelector_default").disabled = true;
@@ -249,8 +194,6 @@ _("advSet_webhook_colorSelector_custom_input").addEventListener("change", (e) =>
 		_("advSet_webhook_colorSelector_default").click();
 	}
 });
-
-
 
 
 
