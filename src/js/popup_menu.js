@@ -1,4 +1,16 @@
-
+/*
+*   _____ __     _____                  ____                 _ 
+*  | ____/ /_   | ____|__ _ ___ _   _  / ___|  ___ _ __   __| |
+*  |  _|| '_ \  |  _| / _` / __| | | | \___ \ / _ \ '_ \ / _` |
+*  | |__| (_) | | |__| (_| \__ \ |_| |  ___) |  __/ | | | (_| |
+*  |_____\___/  |_____\__,_|___/\__, | |____/ \___|_| |_|\__,_|
+*                               |___/                          
+*
+* E6 easy send -  The easy way to send posts to Discord
+* Add-on Pop-up menu logic file.
+*
+* Copyright (c) 2022 Chris G.
+*/
 const _ = (id) => {return document.getElementById(id)}
 const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundColor = clr; document.body.innerHTML = msg + "<br>" + (msg?.stack || "")} 
 
@@ -76,6 +88,7 @@ const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundC
 	_("advSet_webhook_displayname").value = storedSettings.advSet_webhook_displayname;
 	_("advSet_webhook_colorSelector_default").checked = (storedSettings.advSet_webhook_displayColor === "default");
 	_("advSet_webhook_colorSelector_random").checked = (storedSettings.advSet_webhook_displayColor === "random");
+
 	if(storedSettings.advSet_webhook_displayColor !== "default" && storedSettings.advSet_webhook_displayColor !== "random"){
 		_("advSet_webhook_colorSelector_custom").checked = true;
 		_("advSet_webhook_colorSelector_custom_input").disabled = false;

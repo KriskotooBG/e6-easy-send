@@ -1,3 +1,16 @@
+/*
+*   _____ __     _____                  ____                 _ 
+*  | ____/ /_   | ____|__ _ ___ _   _  / ___|  ___ _ __   __| |
+*  |  _|| '_ \  |  _| / _` / __| | | | \___ \ / _ \ '_ \ / _` |
+*  | |__| (_) | | |__| (_| \__ \ |_| |  ___) |  __/ | | | (_| |
+*  |_____\___/  |_____\__,_|___/\__, | |____/ \___|_| |_|\__,_|
+*                               |___/                          
+*
+* E6 easy send -  The easy way to send posts to Discord
+* Main logic file.
+*
+* Copyright (c) 2022 Chris G.
+*/
 const _ = (id) => {return document.getElementById(id)}
 
 let disabled = false;
@@ -16,7 +29,7 @@ let sentState = 1;
 	
 	if(!settingsOBJ.sv || settingsOBJ.sv < 1){
 		disabled = true;
-		createModalBox("Thanks for installing me!", "To enable E6 easy send, please open the menu by clicking the icon in the top-right of the broser;<br>Paste a discord webhook URL in the input box;<br>And refresh the page!<br><br>this message will never appear after the extnsion menu has been opened atleast once.");
+		createModalBox("Thanks for installing me!", "To enable E6 Easy Send, please open the menu by clicking its icon in the top-right of the browser;<br>Paste a Discord webhook URL in the input box and refresh the page!<br><br><i>this message will never appear after the extnsion menu has been opened at least once.");
 		return;
 	}
 
@@ -34,7 +47,6 @@ let sentState = 1;
 	if(!_("e6easysend_mainSendBTN_wrapper") && _("image-download-link") && _("image-container")){
 		createAndAppendSendButton(settingsOBJ.advSet_sendbtn_baseText);
 
-		//if(settingsOBJ.sendOnView) _("e6easysend_mainSendBTN_wrapper").click();
 		if(settingsOBJ.sendOnView){
 			autoSent = true;
 			_("e6easysend_mainSendBTN_wrapper").click();
@@ -132,9 +144,9 @@ function createAndAppendCustomStyles(baseColor, textColor, hoverColor, successCo
 
 
 
-function createAndAppendSendButton(text = "Send to discord"){
+function createAndAppendSendButton(text = "Send to Discord"){
 	const btn = document.createElement("span");
-	btn.classList.add("button", "e6easysend_buttonSend");                                               //button: e621 default class.
+	btn.classList.add("button", "e6easysend_buttonSend");                                               //button: e926/621 default class.
 	btn.setAttribute("id", "e6easysend_mainSendBTN");
 	btn.appendChild(document.createTextNode(text));
 
@@ -143,7 +155,7 @@ function createAndAppendSendButton(text = "Send to discord"){
 	btnWrapper.appendChild(btn);
 
 
-	_("image-download-link").parentNode.insertBefore(btnWrapper, _("image-download-link").nextSibling); //image-download-link: e621 Download button.
+	_("image-download-link").parentNode.insertBefore(btnWrapper, _("image-download-link").nextSibling); //image-download-link: e926/621 Download button.
 }
 
 
@@ -175,7 +187,7 @@ async function sendToWebhook(webhookURL, mediaURL, postURL, ups, downs, favs, we
 	const payloadJSON = {
 		username: webhookName
 	}
-	const statusBar = (username === null ? "" : "Sent by: '" + username + "' on e621\n") + "👍" + ups + " | " + downs + "👎**            **❤️" + favs;
+	const statusBar = (username === null ? "" : "Sent by: '" + username + "' on " + window.location.hostname + "\n") + "👍" + ups + " | " + downs + "👎**            **❤️" + favs;
 	const mediaType = mediaURL.split(".")[mediaURL.split(".").length - 1];
 
 
@@ -189,13 +201,13 @@ async function sendToWebhook(webhookURL, mediaURL, postURL, ups, downs, favs, we
 
 
 		if(mediaType.toLowerCase() === "webm" || mediaType.toLowerCase() === "mp4"){
-			delete payloadJSON.embeds;   //janky. discord cant have embedded videos in rich embeds.
+			delete payloadJSON.embeds;                                                 //janky. Discord can't have embedded videos in rich embeds.
 			payloadJSON.content = statusBar + "\n" + "<" + postURL + ">\n" + mediaURL;
 		}
 		else payloadJSON.embeds[0].image = { url: mediaURL };
 	}
 	else if(type == "text"){
-		payloadJSON.content = statusBar + "\n" + "<" + postURL + ">\n" + mediaURL; //send as attch!
+		payloadJSON.content = statusBar + "\n" + "<" + postURL + ">\n" + mediaURL;     //todo: send as attch!
 	}
 	else throw new TypeError("Argument 'type' must be either 'text' or 'embed'. Got: " + type);
 
@@ -224,7 +236,7 @@ async function sendPostToWebhook(){
 	if(!settingsOBJ.webhookURL || !checkWebhookURLValidity(settingsOBJ.webhookURL)){
 		sentState = 4;
 		_("e6easysend_mainSendBTN").setAttribute("data-sendok", "false");
-		return createModalBox("Webhook URL missing", "Please provide a valid webhook URL in the addon menu to use this feature.");
+		return createModalBox("Webhook URL missing", "Please provide a valid webhook URL in the add-on menu to use this feature.");
 	}
 
 	webhookURLCache = settingsOBJ.webhookURL;
@@ -235,7 +247,7 @@ async function sendPostToWebhook(){
 		const result = await sendToWebhook(
 			settingsOBJ.webhookURL,
 			(postData.file.url || "unknown link"),
-			("https://e621.net/posts/" + postData.id),
+			("https://" + window.location.hostname + "/posts/" + postData.id),
 			postData.score.up,
 			Math.abs(postData.score.down),
 			postData.fav_count,
@@ -253,7 +265,7 @@ async function sendPostToWebhook(){
 				
 				if(msg.id){
 					_("e6easysend_mainSendBTN").setAttribute("data-sendok", "delete");
-					_("e6easysend_mainSendBTN").innerText = ("Delete from discord");
+					_("e6easysend_mainSendBTN").innerText = ("Delete from Discord");
 					autoSentID = msg.id;
 					return;
 				}
@@ -263,7 +275,7 @@ async function sendPostToWebhook(){
 			}
 
 			_("e6easysend_mainSendBTN").setAttribute("data-sendok", "true");
-			_("e6easysend_mainSendBTN").innerText = (settingsOBJ.advSet_sendbtn_baseTextSent || "Sent to discord");
+			_("e6easysend_mainSendBTN").innerText = (settingsOBJ.advSet_sendbtn_baseTextSent || "Sent to Discord");
 		}
 		else{
 			sentState = 4;
@@ -272,7 +284,7 @@ async function sendPostToWebhook(){
 	}
 	catch(ex){
 		sentState = 4;
-		createModalBox("Error sending media", "An error occured while sending that message to discord.<br>" + ex)
+		createModalBox("Error sending media", "An error occured while sending that message to Discord.<br>" + ex)
 		console.error(ex);
 		_("e6easysend_mainSendBTN").setAttribute("data-sendok", "false");
 	}
@@ -337,7 +349,6 @@ browser.storage.onChanged.addListener((changes, area) => {
 			case "advSet_sendbtn_clrs_btnPressedColorCustom":
 				_("e6easysend_custom_styles").sheet.cssRules[1].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#2e39ab");
 				break;
-
 			case "advSet_sendbtn_clrs_btnSentColorCustom":
 				_("e6easysend_custom_styles").sheet.cssRules[4].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#1b853c");
 				break;
@@ -348,11 +359,10 @@ browser.storage.onChanged.addListener((changes, area) => {
 			
 			
 			case "advSet_sendbtn_baseText":
-				if(sentState === 1) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Send to discord";
+				if(sentState === 1) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Send to Discord";
 				break;
-
 			case "advSet_sendbtn_baseTextSent":
-				if(sentState === 3) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Sent to discord";
+				if(sentState === 3) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Sent to Discord";
 				break;
 			
 
@@ -360,7 +370,4 @@ browser.storage.onChanged.addListener((changes, area) => {
 				break;
 		}
 	}
-
-
-	//
 });
