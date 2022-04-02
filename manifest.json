@@ -2,11 +2,11 @@
 	"manifest_version": 2,
 	"name": "E6 Easy Send",
 	"description": "The addon that allows you to quickly send posts from e926/e621.net to a discord channel!",
-	"version": "1.2.0",
+	"version": "1.2.1",
 
 	"browser_specific_settings":{
 		"gecko":{
-			"strict_min_version": "48.0"
+			"strict_min_version": "58.0"
 		}
 	},
 
