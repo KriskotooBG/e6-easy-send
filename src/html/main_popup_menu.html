@@ -1,3 +1,18 @@
+<!--
+  _____ __     _____                  ____                 _ 
+ | ____/ /_   | ____|__ _ ___ _   _  / ___|  ___ _ __   __| |
+ |  _|| '_ \  |  _| / _` / __| | | | \___ \ / _ \ '_ \ / _` |
+ | |__| (_) | | |__| (_| \__ \ |_| |  ___) |  __/ | | | (_| |
+ |_____\___/  |_____\__,_|___/\__, | |____/ \___|_| |_|\__,_|
+                              |___/                          
+
+ E6 easy send -  The easy way to send posts to Discord
+ Pop-up addon-on menu markup
+
+ Copyright (c) 2022 Christian G.
+-->
+
+
 <!DOCTYPE html>
 <html>
 	<head>
@@ -8,9 +23,7 @@
 		<script src="../js/popup_menu.js" defer></script>
 	</head>
 	<body>
-		<div id="console">
-
-		</div>
+		<div id="console"></div>
 
 		<div style="white-space: nowrap;">
 			<label for="webhookURL">Webhook URL: </label>
@@ -43,7 +56,7 @@
 
 		<div>
 			<input type="checkbox" id="sendUsername">
-			<label for="sendUsername">Send e621 username</label>
+			<label for="sendUsername">Send e621/e926 username</label>
 		</div>
 	
 
@@ -79,11 +92,11 @@
 					<span style="margin-top: .2em;" class="fakelinktext" id="advSet_sendbtn_clrs_defreset">Reset Defaults</span>
 				</details>
 				<div>
-					<input type="text" maxlength="60" id="advSet_sendbtn_baseText" value="Send to discord" data-defval="Send to discord">
+					<input type="text" maxlength="60" id="advSet_sendbtn_baseText" value="Send to Discord" data-defval="Send to Discord">
 					<label for="advSet_sendbtn_baseText">Send button text</label>
 				</div>
 				<div>
-					<input type="text" maxlength="60" id="advSet_sendbtn_baseTextSent" value="Sent to discord" data-defval="Sent to discord">
+					<input type="text" maxlength="60" id="advSet_sendbtn_baseTextSent" value="Sent to Discord" data-defval="Sent to Discord">
 					<label for="advSet_sendbtn_baseTextSent">Send button text - sent successfully</label>
 				</div>
 
