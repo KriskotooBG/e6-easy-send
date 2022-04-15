@@ -12,7 +12,7 @@
 * Copyright (c) 2022 Chris G.
 */
 const _ = (id) => {return document.getElementById(id)}
-const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundColor = clr; document.body.innerHTML = msg + "<br>" + (msg?.stack || "")} 
+const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundColor = clr; document.body.innerText = msg; document.body.appendChild(document.createElement("BR")); document.body.innerText += (msg?.stack || "")} 
 
 
 
@@ -21,44 +21,51 @@ const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundC
 
 (async () => {
 	const curTheme = await browser.theme.getCurrent() || null;
-	if(curTheme && curTheme.colors){
-		const styleTag = document.createElement("style");
-		styleTag.innerHTML = 
-			`
-			body{
-				${curTheme.colors.popup_text ? "color: " + curTheme.colors.popup_text + ";": ""}
-				${curTheme.colors.popup ? "background-color: " + curTheme.colors.popup + ";": ""}
-			}
-			input[type="text"], input[type="url"]{
-				${curTheme.colors.input_color ? "color: " + curTheme.colors.input_color + ";" : ""}
-				${curTheme.colors.input_background ? "background-color: " + curTheme.colors.input_background + ";" : ""}
-				${curTheme.colors.input_border ? "border-color: " + curTheme.colors.input_border + ";" : ""}
-			}
-			`;
-		document.head.appendChild(styleTag);
-	}
+	const styleTag = document.createElement("style");
+	styleTag.textContent = 
+		`:root{
+			--browser_bg_clr: ${ (curTheme?.colors?.popup || "#f5f5f5") + ";" }
+			--browser_tx_clr: ${ (curTheme?.colors?.popup_text || "#000000") +  ";" }
+			--browser_br_clr: ${ (curTheme?.colors?.popup_border || "#262626") + ";"}
+
+			--browser_inp_bg_clr: ${ (curTheme?.colors?.input_background || "#a6a6a6") + ";"}
+			--browser_inp_tx_clr: ${ (curTheme?.colors?.input_color || "#030303") + ";"}
+			--borwser_inp_br_clr: ${ (curTheme?.colors?.input_border || "#545454") + ";"}
+		}`;
+	document.head.insertBefore(styleTag, _("mainStylesheet"));
+
 
 
 	const storedSettings = await browser.storage.local.get() || {};
+	storedSettings.sv = 2;
 
-	if(!storedSettings.hasOwnProperty("sv")) storedSettings.sv = 1;
+	setDefaults(storedSettings);
+	initUIValues(storedSettings);
 
-	if(!storedSettings.hasOwnProperty("webhookURL")) storedSettings.webhookURL = "";
-	if(!storedSettings.hasOwnProperty("sendAs")) storedSettings.sendAs = (_("sendAsEmbed").checked ? "embed" : "text");
-	if(!storedSettings.hasOwnProperty("sendOnDBClick")) storedSettings.sendOnDBClick = _("sendOnDBClick").checked;
-	if(!storedSettings.hasOwnProperty("sendOnView")) storedSettings.sendOnView = _("sendOnView").checked;
-	if(!storedSettings.hasOwnProperty("sendUsername")) storedSettings.sendUsername = _("sendUsername").checked;
+	await browser.storage.local.set(storedSettings);          //save defaults & keys
+})().catch(setErrorState)
 
-	if(!storedSettings.hasOwnProperty("advSet_sendbtn_clrs_btnBaseColorCustom")) storedSettings.advSet_sendbtn_clrs_btnBaseColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnBaseColorCustom").value) || _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
-	if(!storedSettings.hasOwnProperty("advSet_sendbtn_clrs_btnPressedColorCustom")) storedSettings.advSet_sendbtn_clrs_btnPressedColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnPressedColorCustom").value) || _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
-	if(!storedSettings.hasOwnProperty("advSet_sendbtn_clrs_btnSentColorCustom")) storedSettings.advSet_sendbtn_clrs_btnSentColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnSentColorCustom").value) || _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
-	if(!storedSettings.hasOwnProperty("advSet_sendbtn_clrs_btnTextColorCustom")) storedSettings.advSet_sendbtn_clrs_btnTextColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnTextColorCustom").value) || _("advSet_sendbtn_clrs_btnTextColorCustom").getAttribute("data-defval");
-	if(!storedSettings.hasOwnProperty("advSet_sendbtn_baseText")) storedSettings.advSet_sendbtn_baseText = _("advSet_sendbtn_baseText").value || _("advSet_sendbtn_baseText").getAttribute("data-defval");
-	if(!storedSettings.hasOwnProperty("advSet_sendbtn_baseTextSent")) storedSettings.advSet_sendbtn_baseTextSent = _("advSet_sendbtn_baseTextSent").value || _("advSet_sendbtn_baseTextSent").getAttribute("data-defval");
+
+
+
+function setDefaults(storage){
+	if(!storage.hasOwnProperty("webhookURL"))                                storage.webhookURL = "";
+	if(!storage.hasOwnProperty("sendAs"))                                    storage.sendAs = (_("sendAsEmbed").checked ? "embed" : "text");
+	if(!storage.hasOwnProperty("sendOnDBClick"))                             storage.sendOnDBClick = _("sendOnDBClick").checked;
+	if(!storage.hasOwnProperty("sendOnView"))                                storage.sendOnView = _("sendOnView").checked;
+	if(!storage.hasOwnProperty("sendUsername"))                              storage.sendUsername = _("sendUsername").checked;
+	if(!storage.hasOwnProperty("rememberPostHistory"))                       storage.rememberPostHistory = document.querySelector("[name='rememberPostHistoryRadio']:checked")?.value || "permanently";
+
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnBaseColorCustom"))    storage.advSet_sendbtn_clrs_btnBaseColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnBaseColorCustom").value) || _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnPressedColorCustom")) storage.advSet_sendbtn_clrs_btnPressedColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnPressedColorCustom").value) || _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnSentColorCustom"))    storage.advSet_sendbtn_clrs_btnSentColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnSentColorCustom").value) || _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnTextColorCustom"))    storage.advSet_sendbtn_clrs_btnTextColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnTextColorCustom").value) || _("advSet_sendbtn_clrs_btnTextColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_baseText"))                   storage.advSet_sendbtn_baseText = _("advSet_sendbtn_baseText").value || _("advSet_sendbtn_baseText").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_baseTextSent"))               storage.advSet_sendbtn_baseTextSent = _("advSet_sendbtn_baseTextSent").value || _("advSet_sendbtn_baseTextSent").getAttribute("data-defval");
 	
 
-	if(!storedSettings.hasOwnProperty("advSet_webhook_displayname")) storedSettings.advSet_webhook_displayname = _("advSet_webhook_displayname").value || _("advSet_webhook_displayname").getAttribute("data-defval");
-	if(!storedSettings.hasOwnProperty("advSet_webhook_displayColor")){
+	if(!storage.hasOwnProperty("advSet_webhook_displayname"))                storage.advSet_webhook_displayname = _("advSet_webhook_displayname").value || _("advSet_webhook_displayname").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_webhook_displayColor")){
 		const checked = (_("advSet_webhook_colorSelector_default").checked ? "default" : _("advSet_webhook_colorSelector_random").checked ? "random" : _("advSet_webhook_colorSelector_custom").checked ? "custom" : "default");
 		let val = checked;
 
@@ -67,40 +74,39 @@ const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundC
 			val = _("advSet_webhook_colorSelector_custom_input").value;
 		}
 		else _("advSet_webhook_colorSelector_custom_input").disabled = true;
-		storedSettings.advSet_webhook_displayColor = val;
+		storage.advSet_webhook_displayColor = val;
 	} 
-	
-	
-	_("webhookURL").value = storedSettings.webhookURL;
-	_("sendAsEmbed").checked = (storedSettings.sendAs === "embed");
-	_("sendAsText").checked = (storedSettings.sendAs === "text");
-	_("sendOnDBClick").checked = storedSettings.sendOnDBClick;
-	_("sendOnView").checked = storedSettings.sendOnView;
-	_("sendUsername").checked = storedSettings.sendUsername;
-	
-	_("advSet_sendbtn_clrs_btnBaseColorCustom").value = storedSettings.advSet_sendbtn_clrs_btnBaseColorCustom;
-	_("advSet_sendbtn_clrs_btnPressedColorCustom").value = storedSettings.advSet_sendbtn_clrs_btnPressedColorCustom;
-	_("advSet_sendbtn_clrs_btnSentColorCustom").value = storedSettings.advSet_sendbtn_clrs_btnSentColorCustom;
-	_("advSet_sendbtn_clrs_btnTextColorCustom").value = storedSettings.advSet_sendbtn_clrs_btnTextColorCustom;
-	_("advSet_sendbtn_baseText").value = storedSettings.advSet_sendbtn_baseText;
-	_("advSet_sendbtn_baseTextSent").value = storedSettings.advSet_sendbtn_baseTextSent;
+}
 
-	_("advSet_webhook_displayname").value = storedSettings.advSet_webhook_displayname;
-	_("advSet_webhook_colorSelector_default").checked = (storedSettings.advSet_webhook_displayColor === "default");
-	_("advSet_webhook_colorSelector_random").checked = (storedSettings.advSet_webhook_displayColor === "random");
 
-	if(storedSettings.advSet_webhook_displayColor !== "default" && storedSettings.advSet_webhook_displayColor !== "random"){
+function initUIValues(storage){
+	_("webhookURL").value =                                                  storage.webhookURL;
+	_("sendAsEmbed").checked =                                               storage.sendAs === "embed";
+	_("sendAsText").checked =                                                storage.sendAs === "text";
+	_("sendOnDBClick").checked =                                             storage.sendOnDBClick;
+	_("sendOnView").checked =                                                storage.sendOnView;
+	_("sendUsername").checked =                                              storage.sendUsername;
+
+	document.querySelectorAll("[name='rememberPostHistoryRadio']").forEach(e => e.checked = false);
+	document.querySelector("[name='rememberPostHistoryRadio'][value='" + storage.rememberPostHistory + "']").checked = true;
+	
+	_("advSet_sendbtn_clrs_btnBaseColorCustom").value =                      storage.advSet_sendbtn_clrs_btnBaseColorCustom;
+	_("advSet_sendbtn_clrs_btnPressedColorCustom").value =                   storage.advSet_sendbtn_clrs_btnPressedColorCustom;
+	_("advSet_sendbtn_clrs_btnSentColorCustom").value =                      storage.advSet_sendbtn_clrs_btnSentColorCustom;
+	_("advSet_sendbtn_clrs_btnTextColorCustom").value =                      storage.advSet_sendbtn_clrs_btnTextColorCustom;
+	_("advSet_sendbtn_baseText").value =                                     storage.advSet_sendbtn_baseText;
+	_("advSet_sendbtn_baseTextSent").value =                                 storage.advSet_sendbtn_baseTextSent;
+
+	_("advSet_webhook_displayname").value =                                  storage.advSet_webhook_displayname;
+	_("advSet_webhook_colorSelector_default").checked =                      storage.advSet_webhook_displayColor === "default";
+	_("advSet_webhook_colorSelector_random").checked =                       storage.advSet_webhook_displayColor === "random";
+
+	if(storage.advSet_webhook_displayColor !== "default" && storage.advSet_webhook_displayColor !== "random"){
 		_("advSet_webhook_colorSelector_custom").checked = true;
 		_("advSet_webhook_colorSelector_custom_input").disabled = false;
-		_("advSet_webhook_colorSelector_custom_input").value = storedSettings.advSet_webhook_displayColor;
+		_("advSet_webhook_colorSelector_custom_input").value =               storage.advSet_webhook_displayColor;
 	}
-
-
-
-	await browser.storage.local.set(storedSettings);          //save defaults & keys
-})().catch(setErrorState)
-
-
+}
 
 
 
@@ -124,7 +130,48 @@ function registerListeners(...inputData){
 
 
 
+function openConfirmationBox(title, body, onClose){
+	if(!title || !body || !onClose) throw new Error("openConfirmationBox requires exactly 3 arguments!");
+	if(typeof title !== "string") throw new TypeError("openConfirmationBox > title must be of type String, got: " + typeof title);
+	if(typeof body !== "string") throw new TypeError("openConfirmationBox > body must be of type String, got: " + typeof body);
+	if(typeof onClose !== "function") throw new TypeError("openConfirmationBox > onClose must be of type Function, got: " + typeof onClose);
 
+	if(_("popup_confirmation_fader").style.display == "block") return false;
+	_("popup_confirmation_fader").style.display = "block";
+
+	_("popup_confirmation_body_header").innerText = title;
+	_("popup_confirmation_body_text").innerText = body;
+
+
+	const onBtnClick = (e) => {
+		_("popup_confirmation_cancel_btn").removeEventListener("click", onBtnClick);
+		_("popup_confirmation_confirm_btn").removeEventListener("click", onBtnClick);
+
+		_("popup_confirmation_fader").style.display = "none";
+		onClose((e.target.id == "popup_confirmation_confirm_btn"));
+	}
+	_("popup_confirmation_cancel_btn").addEventListener("click", onBtnClick);
+	_("popup_confirmation_confirm_btn").addEventListener("click", onBtnClick);
+	return true;
+}
+
+function hyperlinkConfirmation(elemID, confrimText, endText, onAction){
+	if(!elemID || !confrimText || !endText || !onAction) throw new Error("hyperlinkConfirmation requires exactly 4 arguments!");
+	if(typeof elemID !== "string") throw new TypeError("hyperlinkConfirmation > elemID must be of type String, got: " + typeof elemID);
+	if(typeof confrimText !== "string") throw new TypeError("hyperlinkConfirmation > confrimText must be of type String, got: " + typeof confrimText);
+	if(typeof endText !== "string") throw new TypeError("hyperlinkConfirmation > endText must be of type String, got: " + typeof endText);
+	if(typeof onAction !== "function") throw new TypeError("hyperlinkConfirmation > onAction must be of type Function, got: " + typeof onAction);
+
+	if(!_(elemID).getAttribute("data-hc-ccs") || _(elemID).getAttribute("data-hc-ccs") == "init"){
+		_(elemID).innerText = confrimText;
+		_(elemID).setAttribute("data-hc-ccs", "ctc");
+	}
+	else if(_(elemID).getAttribute("data-hc-ccs") == "ctc"){
+		_(elemID).innerText = endText;
+		_(elemID).setAttribute("data-hc-ccs", "end");
+		onAction();
+	}
+}
 
 
 
@@ -159,6 +206,24 @@ const onSendAsChange = (e) => {
 }
 _("sendAsEmbed").addEventListener("click", onSendAsChange);
 _("sendAsText").addEventListener("click", onSendAsChange);
+
+
+const onRememberHistoryChange = (e) => {
+	_("rememberPostHistory_permanently").disabled = true;
+	_("rememberPostHistory_session").disabled = true;
+	_("rememberPostHistory_off").disabled = true;
+
+	browser.storage.local.set({rememberPostHistory: e.target.value})
+	.then(() => {
+		_("rememberPostHistory_permanently").disabled = false;
+	_("rememberPostHistory_session").disabled = false;
+	_("rememberPostHistory_off").disabled = false;
+	})
+	.catch(setErrorState);
+}
+_("rememberPostHistory_permanently").addEventListener("click", onRememberHistoryChange);
+_("rememberPostHistory_session").addEventListener("click", onRememberHistoryChange)
+_("rememberPostHistory_off").addEventListener("click", onRememberHistoryChange)
 
 
 const onWebhookClrChange = (e) => {
@@ -215,31 +280,44 @@ _("advSet_webhook_colorSelector_custom_input").addEventListener("change", (e) =>
 
 
 
-_("advSet_sendbtn_clrs_defreset").addEventListener("click", (e) => {
-	_("advSet_sendbtn_clrs_btnBaseColorCustom").value = _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
-	_("advSet_sendbtn_clrs_btnPressedColorCustom").value = _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
-	_("advSet_sendbtn_clrs_btnSentColorCustom").value = _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
-	_("advSet_sendbtn_clrs_btnTextColorCustom").value = _("advSet_sendbtn_clrs_btnTextColorCustom").getAttribute("data-defval");
+_("rememberPostHistory_permanently_deleteStorage").addEventListener("click", (e) => {
+	hyperlinkConfirmation("rememberPostHistory_permanently_deleteStorage", "Are you sure?", "History deleted.", () => {
+		browser.storage.local.set({flags_delete_history: true})
+		.catch(setErrorState);
+	})
+});
 
-	_("advSet_sendbtn_clrs_btnBaseColorCustom").dispatchEvent(new Event("change"));
-	_("advSet_sendbtn_clrs_btnPressedColorCustom").dispatchEvent(new Event("change"));
-	_("advSet_sendbtn_clrs_btnSentColorCustom").dispatchEvent(new Event("change"));
-	_("advSet_sendbtn_clrs_btnTextColorCustom").dispatchEvent(new Event("change"));
+_("advSet_sendbtn_clrs_defreset").addEventListener("click", (e) => {
+	hyperlinkConfirmation("advSet_sendbtn_clrs_defreset", "Are you sure?", "Defaults loaded.", () => {
+		_("advSet_sendbtn_clrs_btnBaseColorCustom").value = _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnPressedColorCustom").value = _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnSentColorCustom").value = _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnTextColorCustom").value = _("advSet_sendbtn_clrs_btnTextColorCustom").getAttribute("data-defval");
+
+		_("advSet_sendbtn_clrs_btnBaseColorCustom").dispatchEvent(new Event("change"));
+		_("advSet_sendbtn_clrs_btnPressedColorCustom").dispatchEvent(new Event("change"));
+		_("advSet_sendbtn_clrs_btnSentColorCustom").dispatchEvent(new Event("change"));
+		_("advSet_sendbtn_clrs_btnTextColorCustom").dispatchEvent(new Event("change"));
+	});
 });
 
 
 _("advSet_sendbtn_defreset").addEventListener("click", (e) => {
-	_("advSet_sendbtn_baseText").value = _("advSet_sendbtn_baseText").getAttribute("data-defval");
-	_("advSet_sendbtn_baseTextSent").value = _("advSet_sendbtn_baseTextSent").getAttribute("data-defval");
+	hyperlinkConfirmation("advSet_sendbtn_defreset", "Are you sure?", "Defaults loaded.", () => {
+		_("advSet_sendbtn_baseText").value = _("advSet_sendbtn_baseText").getAttribute("data-defval");
+		_("advSet_sendbtn_baseTextSent").value = _("advSet_sendbtn_baseTextSent").getAttribute("data-defval");
 
-	_("advSet_sendbtn_baseText").dispatchEvent(new Event("change"));
-	_("advSet_sendbtn_baseTextSent").dispatchEvent(new Event("change"));
+		_("advSet_sendbtn_baseText").dispatchEvent(new Event("change"));
+		_("advSet_sendbtn_baseTextSent").dispatchEvent(new Event("change"));
+	});
 });
 
 
 _("advSet_webhook_defreset").addEventListener("click", (e) => {
-	_("advSet_webhook_displayname").value = _("advSet_webhook_displayname").getAttribute("data-defval");
+	hyperlinkConfirmation("advSet_webhook_defreset", "Are you sure?", "Defaults loaded.", () => {
+		_("advSet_webhook_displayname").value = _("advSet_webhook_displayname").getAttribute("data-defval");
 
-	_("advSet_webhook_displayname").dispatchEvent(new Event("change"));
-	_("advSet_webhook_colorSelector_default").click();
+		_("advSet_webhook_displayname").dispatchEvent(new Event("change"));
+		_("advSet_webhook_colorSelector_default").click();
+	});
 });
