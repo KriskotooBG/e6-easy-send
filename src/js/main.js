@@ -13,12 +13,13 @@
 */
 const _ = (id) => {return document.getElementById(id)}
 
+let storage = null;
 let disabled = false;
 let sendOnDBClick = true;
 let autoSent = false;
 let autoSentID;
 let webhookURLCache = "";
-let sentState = 1;
+let postState = 1;                     //1: init;  2: sending;  3: sent ok!;  4: error;  5: in history;
 
 
 
@@ -27,10 +28,19 @@ let sentState = 1;
 (async () => {
 	const settingsOBJ = (await browser.storage.local.get()) || {};
 	
-	if(!settingsOBJ.sv || settingsOBJ.sv < 1){
+	if(!settingsOBJ.sv || settingsOBJ.sv < 2){
 		disabled = true;
-		createModalBox("Thanks for installing me!", "To enable E6 Easy Send, please open the menu by clicking its icon in the top-right of the browser;<br>Paste a Discord webhook URL in the input box and refresh the page!<br><br><i>this message will never appear after the extnsion menu has been opened at least once.");
+		if(settingsOBJ.sv == 1) createModalBox("E6 Easy Send Update!", "Hello, An update has been installed for E6 Easy Send!<br>Please open the extension menu to check out the new features!<br><br><i>this message will never appear after the extension menu has been opened at least once.</i>")
+		else createModalBox("Thanks for installing me!", "To enable E6 Easy Send, please open the menu by clicking its icon in the top-right of the browser;<br>Paste a Discord webhook URL in the input box and refresh the page!<br><br><i>this message will never appear after the extension menu has been opened at least once.</i>");
 		return;
+	}
+
+
+	if(settingsOBJ.flags_delete_history){
+		localStorage.removeItem("e6es_ph");
+
+		browser.storage.local.set({flags_delete_history: false})
+		.catch(displayNativeNoticeAsError);
 	}
 
 	createAndAppendCustomStyles(
@@ -39,7 +49,7 @@ let sentState = 1;
 		settingsOBJ.advSet_sendbtn_clrs_btnPressedColorCustom,
 		settingsOBJ.advSet_sendbtn_clrs_btnSentColorCustom
 	);
-	
+
 
 	sendOnDBClick = settingsOBJ.hasOwnProperty("sendOnDBClick") ? settingsOBJ.sendOnDBClick : true;
 
@@ -47,46 +57,77 @@ let sentState = 1;
 	if(!_("e6easysend_mainSendBTN_wrapper") && _("image-download-link") && _("image-container")){
 		createAndAppendSendButton(settingsOBJ.advSet_sendbtn_baseText);
 
+
+		if(settingsOBJ.rememberPostHistory == "off"){             storage = null; sessionStorage.removeItem("e6es_ph");}   //clear if setting got changed while script was not loaded.
+		else if(settingsOBJ.rememberPostHistory == "permanently") storage = localStorage;
+		else if(settingsOBJ.rememberPostHistory == "session")     storage = sessionStorage;
+
+
+		if(postInHistory(_("image-container").getAttribute("data-id"))){
+			postState = 5;
+			_("e6easysend_mainSendBTN").setAttribute("data-state", "sendagain");
+			_("e6easysend_mainSendBTN").innerText = "Send again?";
+			return;
+		}
+		
 		if(settingsOBJ.sendOnView){
 			autoSent = true;
 			_("e6easysend_mainSendBTN_wrapper").click();
 		}
 	}
-})().catch(console.error);
+})().catch((ex) => {console.error(ex); displayNativeNoticeAsError(ex);});
 
 
 
 
 
-
+function displayNativeNoticeAsError(msg){     //this function highjacks #notice from e621/e926. Not a very good approach, but good enough for he rare error-cases
+	if(_("notice")){
+		_("notice").classList.remove("ui-state-highlight");
+		_("notice").classList.add("ui-state-error"); //classes from e621/e926.
+		_("notice").children[0].innerText = "";
+		_("notice").children[0].append(
+			document.createTextNode("E6 Easy Send init-error!"),
+			document.createElement("br"),
+			document.createTextNode(msg),
+			document.createElement("br"),
+			document.createElement("br"),
+			document.createTextNode("Please report this error to the developers of E6 Easy Send!")
+		);
+		_("notice").style.display = "";
+	}
+	else alert(msg);                          //terrible, should never happen.
+}
 
 
 
 function createModalBox(title, description, width = "auto", height = "auto"){
 	const closeBTN = document.createElement("span");
 	closeBTN.appendChild(document.createTextNode("✖"));
+	closeBTN.setAttribute("id", "e6es_modal_box_wrapper_close_btn");
 	closeBTN.style.position = "absolute";
 	closeBTN.style.right = "7px";
 	closeBTN.style.top = "5px";
-	closeBTN.style.color = "#424242";
+	closeBTN.style.color = "#ff6767";
 	closeBTN.style.cursor = "pointer";
 	closeBTN.style.fontSize = "1.5em";
 
 	const titleText = document.createElement("div");
 	titleText.style.fontSize = "2.5em";
-	titleText.style.color = "#000000";
+	titleText.style.color = "#e9f2fa";
 	titleText.appendChild(document.createTextNode(title))
 
 	const bodyText = document.createElement("div");
-	bodyText.style.color = "#000000";
+	bodyText.style.color = "#e9f2fa";
 	bodyText.style.marginTop = "15px";
-	bodyText.innerHTML = description;
+	bodyText.insertAdjacentHTML("beforeend", description);
 
 	const alertBody = document.createElement("div");
+	alertBody.setAttribute("id", "e6es_modal_box_wrapper");
 	alertBody.appendChild(closeBTN);
 	alertBody.appendChild(titleText);
 	alertBody.appendChild(bodyText);
-	alertBody.style.backgroundColor = "#fafafa";
+	alertBody.style.backgroundColor = "#1f3c67";
 	alertBody.style.maxWidth = "90%";
 	alertBody.style.textAlign = "center";
 	alertBody.style.position = "fixed";
@@ -101,21 +142,14 @@ function createModalBox(title, description, width = "auto", height = "auto"){
 
 
 	document.body.appendChild(alertBody);
-
-
-	const remv = (e) => {
-		closeBTN.removeEventListener("click", remv);
-		alertBody.remove();
-	}
-	closeBTN.addEventListener("click", remv)
 }
 
 
 
 function createAndAppendCustomStyles(baseColor, textColor, hoverColor, successColor){
 	const customStyles = document.createElement("style");
-	customStyles.setAttribute("id", "e6easysend_custom_styles")
-	customStyles.innerHTML =
+	customStyles.setAttribute("id", "e6easysend_custom_styles");
+	customStyles.textContent =
 		`.e6easysend_buttonSend{
 			cursor: pointer;
 			background-color: ${checkHexColorValidity(baseColor, "#5865F2")};
@@ -124,19 +158,23 @@ function createAndAppendCustomStyles(baseColor, textColor, hoverColor, successCo
 		.e6easysend_buttonSend:hover{
 			background-color: ${checkHexColorValidity(hoverColor, "#2e39ab")};
 		}
-		.e6easysend_buttonSend[data-sendok="sending"]{
+		.e6easysend_buttonSend[data-state="sending"]{
 			background-color: #303030;
 			color: #ffffff;
 		}
-		.e6easysend_buttonSend[data-sendok="delete"]{
+		.e6easysend_buttonSend[data-state="delete"]{
 			background-color: #a11a29;
 			color: #ffffff;
 		}
-		.e6easysend_buttonSend[data-sendok="true"]{
+		.e6easysend_buttonSend[data-state="true"]{
 			background-color: ${checkHexColorValidity(successColor, "#37ff77")};
 		}
-		.e6easysend_buttonSend[data-sendok="false"]{
+		.e6easysend_buttonSend[data-state="false"]{
 			background-color: #a83232;
+			color: #ffffff;
+		}
+		.e6easysend_buttonSend[data-state="sendagain"]{
+			background-color: #a11a29;
 			color: #ffffff;
 		}`;
 	document.getElementsByTagName("head")[0].appendChild(customStyles);
@@ -164,6 +202,11 @@ function checkHexColorValidity(hex, def = null){
 	return /^#([0-9a-f]{3}){1,2}$/i.test(hex) ? hex : def;
 }
 
+
+function postInHistory(id){
+	if(!storage) return null;
+	return new RegExp(id + ",").test(storage.getItem("e6es_ph"));
+}
 
 
 function checkWebhookURLValidity(url){
@@ -228,17 +271,16 @@ async function sendToWebhook(webhookURL, mediaURL, postURL, ups, downs, favs, we
 
 
 async function sendPostToWebhook(){
-	if(sentState == 3) return;
-	sentState = 2;
-	_("e6easysend_mainSendBTN").setAttribute("data-sendok", "sending");
+	if(postState == 3) return;
+	postState = 2;
+	_("e6easysend_mainSendBTN").setAttribute("data-state", "sending");
 
 	const settingsOBJ = (await browser.storage.local.get(["webhookURL", "sendAs", "sendUsername", "advSet_sendbtn_baseTextSent", "advSet_webhook_displayname", "advSet_webhook_displayColor"])) || {}
 	if(!settingsOBJ.webhookURL || !checkWebhookURLValidity(settingsOBJ.webhookURL)){
-		sentState = 4;
-		_("e6easysend_mainSendBTN").setAttribute("data-sendok", "false");
+		postState = 4;
+		_("e6easysend_mainSendBTN").setAttribute("data-state", "false");
 		return createModalBox("Webhook URL missing", "Please provide a valid webhook URL in the add-on menu to use this feature.");
 	}
-
 	webhookURLCache = settingsOBJ.webhookURL;
 
 
@@ -257,36 +299,38 @@ async function sendPostToWebhook(){
 			(settingsOBJ.sendUsername ? (document.body.getAttribute("data-user-name") || "Anonymous") : null)
 		);
 
-		if(result){
-			sentState = 3;
+		if(!result){
+			postState = 4;
+			_("e6easysend_mainSendBTN").setAttribute("data-state", "false");
+		}
+		postState = 3;
 
-			if(autoSent){
-				const msg = await result.json();
-				
-				if(msg.id){
-					_("e6easysend_mainSendBTN").setAttribute("data-sendok", "delete");
-					_("e6easysend_mainSendBTN").innerText = ("Delete from Discord");
-					autoSentID = msg.id;
-					return;
-				}
-				
-				console.log(msg)
-				throw new TypeError("Discord did not retrun a message ID!");
+		if(postInHistory(postData.id) === false){
+			storage.setItem("e6es_ph", ((storage.getItem("e6es_ph") || "") + (postData.id + ",")));
+		}
+
+		if(autoSent){
+			const msg = await result.json();
+			
+			if(msg.id){
+				_("e6easysend_mainSendBTN").setAttribute("data-state", "delete");
+				_("e6easysend_mainSendBTN").innerText = ("Delete from Discord");
+				autoSentID = msg.id;
+				return;
 			}
+			
+			console.log(msg)
+			throw new TypeError("Discord did not retrun a message ID!");
+		}
 
-			_("e6easysend_mainSendBTN").setAttribute("data-sendok", "true");
-			_("e6easysend_mainSendBTN").innerText = (settingsOBJ.advSet_sendbtn_baseTextSent || "Sent to Discord");
-		}
-		else{
-			sentState = 4;
-			_("e6easysend_mainSendBTN").setAttribute("data-sendok", "false");
-		}
+		_("e6easysend_mainSendBTN").setAttribute("data-state", "true");
+		_("e6easysend_mainSendBTN").innerText = (settingsOBJ.advSet_sendbtn_baseTextSent || "Sent to Discord");
 	}
 	catch(ex){
-		sentState = 4;
+		postState = 4;
 		createModalBox("Error sending media", "An error occured while sending that message to Discord.<br>" + ex)
 		console.error(ex);
-		_("e6easysend_mainSendBTN").setAttribute("data-sendok", "false");
+		_("e6easysend_mainSendBTN").setAttribute("data-state", "false");
 	}
 }
 
@@ -303,6 +347,10 @@ async function deleteLastAutoSend(){
 
 	if(resp.status == 204){
 		_("e6easysend_mainSendBTN").innerText = "Deleted!";
+
+		if(postInHistory(_("image-container").getAttribute("data-id"))){
+			storage.setItem("e6es_ph", ((storage.getItem("e6es_ph") || "").replace(_("image-container").getAttribute("data-id") + ",", "")));
+		}
 		return true;
 	}
 	_("e6easysend_mainSendBTN").innerText = "Unable to delete!";
@@ -313,10 +361,15 @@ async function deleteLastAutoSend(){
 
 
 document.body.addEventListener("click", async (e) => {
-	if(e.target.id !== "e6easysend_mainSendBTN" && e.target.id !== "e6easysend_mainSendBTN_wrapper") return;
+	if(e.target.id !== "e6easysend_mainSendBTN" && e.target.id !== "e6easysend_mainSendBTN_wrapper" && e.target.id !== "e6es_modal_box_wrapper_close_btn") return;
 
-	if(_("e6easysend_mainSendBTN").getAttribute("data-sendok") == "delete") return await deleteLastAutoSend();
-	if(sentState !== 2) await sendPostToWebhook();
+	if(e.target.id == "e6easysend_mainSendBTN" || e.target.id == "e6easysend_mainSendBTN_wrapper"){
+		if(_("e6easysend_mainSendBTN").getAttribute("data-state") == "delete") return await deleteLastAutoSend();
+		if(postState !== 2) await sendPostToWebhook();
+	}
+	else if(e.target.id == "e6es_modal_box_wrapper_close_btn"){
+		_("e6es_modal_box_wrapper").remove();
+	}
 });
 
 
@@ -327,8 +380,8 @@ _("image-container").addEventListener("dblclick", async (e) => {
 	e.preventDefault();
 
 	if(!sendOnDBClick) return;
-	if(sentState !== 2) await sendPostToWebhook();
-})
+	if(postState !== 2 && postState !== 5) await sendPostToWebhook();
+});
 
 
 
@@ -340,6 +393,23 @@ browser.storage.onChanged.addListener((changes, area) => {
 		switch(changedProp){
 			case "sendOnDBClick":
 				sendOnDBClick = Boolean(changes[changedProp].newValue);
+				break;
+			
+			case "rememberPostHistory":
+				//todo: handle data transfer better
+				if(changes[changedProp].oldValue == "permanently" && changes[changedProp].newValue == "session"){
+					sessionStorage.setItem("e6es_ph", (localStorage.getItem("e6es_ph") || ""));
+				}
+
+				if(changes[changedProp].newValue == "permanently") storage = localStorage;
+				else if(changes[changedProp].newValue == "session") storage = sessionStorage;
+				else storage = null;
+
+				if(postInHistory(_("image-container").getAttribute("data-id"))){
+					postState = 5;
+					_("e6easysend_mainSendBTN").setAttribute("data-state", "sendagain");
+					_("e6easysend_mainSendBTN").innerText = "Send again?";
+				}
 				break;
 
 
@@ -359,10 +429,10 @@ browser.storage.onChanged.addListener((changes, area) => {
 			
 			
 			case "advSet_sendbtn_baseText":
-				if(sentState === 1) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Send to Discord";
+				if(postState === 1) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Send to Discord";
 				break;
 			case "advSet_sendbtn_baseTextSent":
-				if(sentState === 3) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Sent to Discord";
+				if(postState === 3) _("e6easysend_mainSendBTN").innerText = changes[changedProp].newValue || "Sent to Discord";
 				break;
 			
 
