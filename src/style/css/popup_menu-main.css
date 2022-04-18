@@ -104,3 +104,61 @@ details{
 	background-color: #227711;
 	color: #cccccc;
 }
+
+
+#popupColorPicker_fader{
+	position: absolute;
+	margin: 0;
+	width: 100%;
+	max-width: 100%;
+	height: 100%;
+	background-color: #363636ce;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
+
+}
+
+#popupColorPicker_body{
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 80%;
+	background-color: var(--browser_bg_clr);
+	border: 3px solid var(--browser_br_clr);
+	border-radius: .6em;
+	transform: translate(-50%, -50%);
+	text-align: center;
+	color: var(--browser_tx_clr);
+	padding: 3px;
+}
+
+#popupColorPickerCanvWrapper{
+	max-width: calc(100% - 6px);
+	display: inline-block;
+}
+
+#popupColorPickerCanvMain, #popupColorPickerCanvColor, #popupColorPickerCanvAlpha{
+	height: 7em;
+	display: inline-block;
+}
+#popupColorPickerCanvMain{ width: 7em; }
+#popupColorPickerCanvColor{ width: 1.5em; }
+#popupColorPickerCanvAlpha{ width: 1em; }
+
+#popupColorPickerInpsWrapper{
+	max-width: calc(20% - 6px);
+	height: 7em;
+	display: inline-block;
+}
+
+.rgbinpWrapper{
+	white-space: nowrap;
+}
+
+.popupColorPickerValInp{
+	height: 1.6em;
+	width: 4em;
+	font-size: .8em;
+}
