@@ -145,7 +145,12 @@ details{
 }
 #popupColorPickerCanvMain{ width: 7em; }
 #popupColorPickerCanvColor{ width: 1.5em; }
-#popupColorPickerCanvAlpha{ width: 1em; }
+#popupColorPickerCanvAlpha{
+	width: 1em;
+	background-image: url("/res/images/transparency_grid.png");
+	background-size: 200px;
+	background-color: black;
+}
 
 #popupColorPickerInpsWrapper{
 	max-width: calc(20% - 6px);
@@ -161,4 +166,19 @@ details{
 	height: 1.6em;
 	width: 4em;
 	font-size: .8em;
+}
+
+#popupColorPickerResultPreview{
+	width: 2em;
+	height: 2em;
+	background-image: url("/res/images/transparency_grid.png");
+	background-size: 200px;
+	--clr_picker_bgcolor: black;
+}
+#popupColorPickerResultPreview::after{
+	width: 2em;
+	height: 2em;
+	display: block;
+	content: "";
+	background-color: var(--clr_picker_bgcolor);
 }
