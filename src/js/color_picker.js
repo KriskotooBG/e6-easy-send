@@ -75,9 +75,22 @@ const curSelPos = {
 	colorStripY: 0,
 	alphaStripY: 0
 }
-let baseColor = "#FF0000";
-let currentColorSel = "";
-let currentColorSelWithAlpha = "";
+
+const baseColor = {
+	R: 255,
+	G: 0,
+	B: 0,
+
+	setMultiple: (...values) => {if(values.length > 3) throw new TypeError("e6EasySend: Got unexpected color value length. (A1)"); let k = ["R", "G", "B"]; values.forEach((p, i) => {baseColor[k[i]] = p})}
+}
+const selectedColor = {
+	R: 0,
+	G: 0,
+	B: 0,
+	A: 0,
+
+	setMultiple: (...values) => {if(values.length > 4) throw new TypeError("e6EasySend: Got unexpected color value length. (A2)"); let k = ["R", "G", "B", "A"]; values.forEach((p, i) => {selectedColor[k[i]] = p})}
+}
 
 
 
@@ -88,14 +101,32 @@ let currentColorSelWithAlpha = "";
 
 
 
-onBlockColorSelection();   //calling this method instead of draw, to do initial color selelction
-drawColorSelectStrip();
-drawColorAlphaSelectStrip();
+
+onBlockColorSelection();   //calling this method instead of draw, to do initial color selection.
+drawColorSelectStrip();		//no other init methods are required as onBlockColorSelection() calls everything needed to begin.
 
 
 
 
 
+
+
+
+
+
+function drawGrayOverlayOverAllCanvSelectors(){
+	drawColorSelectorBox();
+	mainCtx.fillStyle = "#4A4A4A90";
+	mainCtx.fillRect(0, 0, mainCanv.width, mainCanv.height);
+
+	drawColorSelectStrip();
+	clrSelCtx.fillStyle = "#4A4A4A90";
+	clrSelCtx.fillRect(0, 0, clrSelCanv.width, clrSelCanv.height);
+
+	drawColorAlphaSelectStrip();
+	alpSelCtx.fillStyle = "#4A4A4A90";
+	alpSelCtx.fillRect(0, 0, alpSelCanv.width, alpSelCanv.height);
+}
 
 
 
@@ -106,7 +137,7 @@ function drawColorSelectorBox(){
 	mainCtx.clearRect(0, 0, mainCanv.width, mainCanv.height);
 
 
-	mainCtx.fillStyle = baseColor;
+	mainCtx.fillStyle = RGBAToHex(baseColor.R, baseColor.G, baseColor.B);
 	mainCtx.fillRect(0, 0, mainCanv.width, mainCanv.height);
 
 	mainCtx.fillStyle = mainBoxLightGradient;
@@ -116,10 +147,8 @@ function drawColorSelectorBox(){
 	mainCtx.fillRect(0, 0, mainCanv.width, mainCanv.height);
 
 	// --------------- thumb ------------ //
-	const clr = currentColorSel.substring(1);
-
 	mainCtx.beginPath();
-	mainCtx.strokeStyle = (0.2126 * parseInt(clr[0] + clr[1], 16) + 0.7152 * parseInt(clr[2] + clr[3], 16) + 0.0722 * parseInt(clr[4] + clr[5], 16)) > 128 ? "#000000AA" : "#FFFFFFAA";
+	mainCtx.strokeStyle = (0.2126 * selectedColor.R + 0.7152 * selectedColor.G + 0.0722 * selectedColor.B) > 128 ? "#000000AA" : "#FFFFFFAA";
 	mainCtx.arc(curSelPos.x, curSelPos.y, 3, 0, Math.PI * 2);
 	mainCtx.stroke();
 }
@@ -127,6 +156,8 @@ function drawColorSelectorBox(){
 
 
 function drawColorSelectStrip(){
+	clrSelCtx.clearRect(0, 0, clrSelCanv.width, clrSelCanv.height);
+
 	clrSelCtx.beginPath();
 	clrSelCtx.rect(0, 0, clrSelCanv.width, clrSelCanv.height);
 	clrSelCtx.fillStyle = colorStripColorGradient;
@@ -134,7 +165,7 @@ function drawColorSelectStrip(){
 
 	clrSelCtx.beginPath();
 	clrSelCtx.strokeStyle = "#000000AA";
-	clrSelCtx.rect(1, curSelPos.colorStripY - 2, clrSelCanv.width - 1, 4);
+	clrSelCtx.rect(1, curSelPos.colorStripY - 2, clrSelCanv.width - 2, 4);
 	clrSelCtx.stroke();
 }
 
@@ -142,18 +173,19 @@ function drawColorSelectStrip(){
 
 function drawColorAlphaSelectStrip(){
 	const transpGradient = alpSelCtx.createLinearGradient(0, 0, 0, alpSelCanv.height);
-	transpGradient.addColorStop(0, currentColorSel + "FF");
-	transpGradient.addColorStop(1, currentColorSel + "00");
+	transpGradient.addColorStop(0, RGBAToHex(selectedColor.R, selectedColor.G, selectedColor.B) + "FF");
+	transpGradient.addColorStop(1, RGBAToHex(selectedColor.R, selectedColor.G, selectedColor.B) + "00");
+
+	alpSelCtx.clearRect(0, 0, alpSelCanv.width, alpSelCanv.height);
 
 	alpSelCtx.beginPath();
-	alpSelCtx.clearRect(0, 0, alpSelCanv.width, alpSelCanv.height);
 	alpSelCtx.rect(0, 0, alpSelCanv.width, alpSelCanv.height);
 	alpSelCtx.fillStyle = transpGradient;
 	alpSelCtx.fill();
 
 	alpSelCtx.beginPath();
 	alpSelCtx.strokeStyle = "#000000AA";
-	alpSelCtx.rect(1, curSelPos.alphaStripY - 2, alpSelCanv.width - 1, 4);
+	alpSelCtx.rect(1, curSelPos.alphaStripY - 2, alpSelCanv.width - 2, 4);
 	alpSelCtx.stroke();
 }
 
@@ -162,7 +194,7 @@ function drawColorAlphaSelectStrip(){
 
 
 function onBaseColorChange(e){
-	if(!e.clientY) return;
+	if(e.clientY === undefined) return;
 
 	const boundingBox = clrSelCanv.getBoundingClientRect();
 	curSelPos.colorStripY = (e.clientY - boundingBox.top) > clrSelCanv.height ? clrSelCanv.height - 1 : (e.clientY - boundingBox.top) < 0 ? 0 : (e.clientY - boundingBox.top);
@@ -171,23 +203,21 @@ function onBaseColorChange(e){
 
 	//terrible temp stuff. The canvas API does not gurantee that a canvas's gradient would hold one of the color stop values. So temporarily we check the Y position + some rounding to give a solid color stop on the base values.
 	switch(Math.round(((clrSelCanv.height == curSelPos.colorStripY + 1 ? clrSelCanv.height : curSelPos.colorStripY) / clrSelCanv.height) * 100)){
-		case 0: case 1:				baseColor = RGBAToHex(255, 0, 0);	break;
-		case 16: case 17: case 18:	baseColor = RGBAToHex(255, 255, 0);	break;
-		case 33: case 34: case 35:	baseColor = RGBAToHex(0, 255, 0);	break;
-		case 50: case 51: case 52:	baseColor = RGBAToHex(0, 255, 255);	break;
-		case 67: case 68: case 69:	baseColor = RGBAToHex(0, 0, 255);	break;
-		case 84: case 85: case 86:	baseColor = RGBAToHex(255, 0, 255);	break;
-		case 99: case 100:			baseColor = RGBAToHex(255, 0, 0);	break;
+		case 0: case 1:				baseColor.setMultiple(255, 0, 0);	break;
+		case 16: case 17: case 18:	baseColor.setMultiple(255, 255, 0);	break;
+		case 33: case 34: case 35:	baseColor.setMultiple(0, 255, 0);	break;
+		case 50: case 51: case 52:	baseColor.setMultiple(0, 255, 255);	break;
+		case 67: case 68: case 69:	baseColor.setMultiple(0, 0, 255);	break;
+		case 84: case 85: case 86:	baseColor.setMultiple(255, 0, 255);	break;
+		case 99: case 100:			baseColor.setMultiple(255, 0, 0);	break;
 		default:
 			const clrData = clrSelCtx.getImageData((clrSelCanv.width / 2), curSelPos.colorStripY, 1, 1).data;
-			baseColor = RGBAToHex(clrData[0], clrData[1], clrData[2]);
+			baseColor.setMultiple(clrData[0], clrData[1], clrData[2]);
 			break;
 	}
 	
 
-	drawColorSelectorBox();
 	onBlockColorSelection();
-	onAlphaChange({clientY: curSelPos.alphaStripY});
 }
 
 
@@ -203,30 +233,30 @@ function onBlockColorSelection(){
 	clrData[1] = (clrData[1] + _R >= 255) ? 255 : (clrData[1] - _R <= 0) ? 0 : clrData[1];
 	clrData[2] = (clrData[2] + _R >= 255) ? 255 : (clrData[2] - _R <= 0) ? 0 : clrData[2];
 	
-	if(curSelPos.x == 1) clrData[0] = clrData[1] = clrData[2] = Math.max(clrData[0], clrData[1], clrData[2]) //make left-most side have equal values.
+	if(curSelPos.x == 0) clrData[0] = clrData[1] = clrData[2] = Math.max(clrData[0], clrData[1], clrData[2]) //make left-most side have equal values.
 
-
-
-	currentColorSel = RGBAToHex(clrData[0], clrData[1], clrData[2]);
 	
 	
 	_ri.value = clrData[0];
 	_gi.value = clrData[1];
 	_bi.value = clrData[2];
 
-	onAlphaChange({clientY: curSelPos.alphaStripY});
+	selectedColor.setMultiple(clrData[0], clrData[1], clrData[2]);
+
+
+	onAlphaSelection();
 }
 function onBlockColorChange(e){
-	if(!e.clientY && e.clientX) return;
+	if(e.clientY === undefined || e.clientX === undefined) return;
 
 	const boundingBox = mainCanv.getBoundingClientRect();
-	const offsetX = Math.round((e.clientX - boundingBox.left) > mainCanv.width ? mainCanv.width - 1 : (e.clientX - boundingBox.left) < 0 ? 1 : (e.clientX - boundingBox.left));
-	const offsetY = Math.round((e.clientY - boundingBox.top) > mainCanv.height ? mainCanv.height : (e.clientY - boundingBox.top) < 0 ? 0 : (e.clientY - boundingBox.top));
+	const offsetX = Math.round((e.clientX - boundingBox.left) > mainCanv.width ? mainCanv.width - 1 : (e.clientX - boundingBox.left) < 0 ? 0 : (e.clientX - boundingBox.left));
+	const offsetY = Math.round((e.clientY - boundingBox.top) > mainCanv.height ? mainCanv.height - 1 : (e.clientY - boundingBox.top) < 0 ? 0 : (e.clientY - boundingBox.top));
 
 	curSelPos.x = offsetX;
 	curSelPos.y = offsetY;
 
-	onBlockColorSelection(offsetX, offsetY);
+	onBlockColorSelection();
 }
 
 
@@ -236,9 +266,12 @@ function onAlphaChange(e){
 	if(e.clientY === undefined) return;
 
 	const boundingBox = alpSelCanv.getBoundingClientRect();
-	curSelPos.alphaStripY = (e.clientY - boundingBox.top) > alpSelCanv.height ? alpSelCanv.height - 1 : (e.clientY - boundingBox.top) < 0 ? 0 : (e.clientY - boundingBox.top);
+	curSelPos.alphaStripY = (e.clientY - boundingBox.top) > alpSelCanv.height ? alpSelCanv.height : (e.clientY - boundingBox.top) < 0 ? 0 : (e.clientY - boundingBox.top);
 
+	onAlphaSelection();
+}
 
+function onAlphaSelection(){
 	drawColorAlphaSelectStrip();
 
 	const clrData = alpSelCtx.getImageData((alpSelCanv.width / 2), curSelPos.alphaStripY, 1, 1).data;
@@ -246,12 +279,40 @@ function onAlphaChange(e){
 	const _R = 3;
 	clrData[3] = (clrData[3] + _R >= 255) ? 255 : (clrData[3] - _R <= 0) ? 0 : clrData[3];
 	
-	currentColorSelWithAlpha = currentColorSel + clrData[3].toString(16).padStart(2, "0");
+	selectedColor.A = clrData[3];
 
 	_ai.value = clrData[3];
-	_hi.value = currentColorSelWithAlpha;
-	document.getElementById("popupColorPickerResultPreview").style.setProperty("--clr_picker_bgcolor", currentColorSelWithAlpha)
+	_hi.value = RGBAToHex(selectedColor.R, selectedColor.G, selectedColor.B, selectedColor.A);
+	document.getElementById("popupColorPickerResultPreview").style.setProperty("--clr_picker_bgcolor", RGBAToHex(selectedColor.R, selectedColor.G, selectedColor.B, selectedColor.A))
 }
+
+
+
+
+
+function onManualColorInput(fromHex = false){
+	drawGrayOverlayOverAllCanvSelectors();
+
+
+	if(fromHex){
+		_ri.value = selectedColor.R;
+		_gi.value = selectedColor.G;
+		_bi.value = selectedColor.B;
+		_ai.value = selectedColor.A;
+	}
+	else _hi.value = RGBAToHex(selectedColor.R, selectedColor.G, selectedColor.B, selectedColor.A);
+
+
+	document.getElementById("popupColorPickerResultPreview").style.setProperty("--clr_picker_bgcolor", RGBAToHex(selectedColor.R, selectedColor.G, selectedColor.B, selectedColor.A))
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -321,20 +382,43 @@ document.getElementById("popupColorPicker_fader").addEventListener("mousemove", 
 
 
 _ri.addEventListener("keyup", (e) => {
-
+	if(isNaN(parseInt(e.target.value))) return;
+	e.target.value = parseInt(e.target.value) > 255 ? 255 : parseInt(e.target.value) < 0 ? 0 : parseInt(e.target.value);
+	
+	selectedColor.R = parseInt(e.target.value);
+	onManualColorInput();
 });
 _gi.addEventListener("keyup", (e) => {
+	if(isNaN(parseInt(e.target.value))) return;
+	e.target.value = parseInt(e.target.value) > 255 ? 255 : parseInt(e.target.value) < 0 ? 0 : parseInt(e.target.value);
 
+	selectedColor.G = parseInt(e.target.value);
+	onManualColorInput();
 });
 _bi.addEventListener("keyup", (e) => {
+	if(isNaN(parseInt(e.target.value))) return;
+	e.target.value = parseInt(e.target.value) > 255 ? 255 : parseInt(e.target.value) < 0 ? 0 : parseInt(e.target.value);
 
+	selectedColor.B = parseInt(e.target.value);
+	onManualColorInput();
 });
 _ai.addEventListener("keyup", (e) => {
+	if(isNaN(parseInt(e.target.value))) return;
+	e.target.value = parseInt(e.target.value) > 255 ? 255 : parseInt(e.target.value) < 0 ? 0 : parseInt(e.target.value);
 
+	selectedColor.A = parseInt(e.target.value);
+	onManualColorInput();
 });
 
 _hi.addEventListener("keyup", (e) => {
+	if(!e.target.value.startsWith("#")) e.target.value = "#" + e.target.value;
+	if(v.length !== 7 && v.length !== 9) return;								//#RRGGBB(AA)
+	if(isNaN(parseInt(e.target.value.substring(1), 16))) return;
+
+
 	
+	selectedColor.setMultiple(...hexToRGBA(e.target.value));
+	onManualColorInput(true)
 });
 
 
