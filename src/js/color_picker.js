@@ -417,7 +417,7 @@ _hi.addEventListener("keyup", (e) => {
 
 
 	
-	selectedColor.setMultiple(...hexToRGBA(e.target.value));
+	selectedColor.setMultiple(...hexToRGBA(e.target.value.length == 7 ? e.target.value + "ff" : e.target.value));
 	onManualColorInput(true)
 });
 
