@@ -134,8 +134,14 @@ details{
 	padding: 3px;
 }
 
+
+#popupColorPickerBodyWrapper{
+	text-align: center;
+	margin-bottom: .5em;
+	border-bottom: 3px solid var(--browser_br_clr);
+}
+
 #popupColorPickerCanvWrapper{
-	max-width: calc(100% - 6px);
 	display: inline-block;
 }
 
@@ -153,9 +159,8 @@ details{
 }
 
 #popupColorPickerInpsWrapper{
-	max-width: calc(20% - 6px);
-	height: 7em;
 	display: inline-block;
+	margin-left: 1em;
 }
 
 .rgbinpWrapper{
@@ -168,17 +173,29 @@ details{
 	font-size: .8em;
 }
 
+
+#popupColorPickerFooter{
+	width: 100%;
+	text-align: center;
+}
+
+#popupColorPickerValInpHEX{
+	width: 6em;
+	display: inline-block;
+}
+
 #popupColorPickerResultPreview{
-	width: 2em;
-	height: 2em;
+	width: 2.5em;
+	height: 2.5em;
 	background-image: url("/res/images/transparency_grid.png");
 	background-size: 200px;
 	--clr_picker_bgcolor: black;
+	display: inline-block;
 }
 #popupColorPickerResultPreview::after{
-	width: 2em;
-	height: 2em;
-	display: block;
+	width: 2.5em;
+	height: 2.5em;
+	display: inline-block;
 	content: "";
 	background-color: var(--clr_picker_bgcolor);
 }
