@@ -412,7 +412,7 @@ _ai.addEventListener("keyup", (e) => {
 
 _hi.addEventListener("keyup", (e) => {
 	if(!e.target.value.startsWith("#")) e.target.value = "#" + e.target.value;
-	if(v.length !== 7 && v.length !== 9) return;								//#RRGGBB(AA)
+	if(e.target.value.length !== 7 && e.target.value.length !== 9) return;								//#RRGGBB(AA)
 	if(isNaN(parseInt(e.target.value.substring(1), 16))) return;
 
 
