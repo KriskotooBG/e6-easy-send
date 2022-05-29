@@ -117,7 +117,7 @@ details{
 	right: 0;
 	bottom: 0;
 	left: 0;
-
+	cursor: pointer;
 }
 
 #popupColorPicker_body{
@@ -132,6 +132,7 @@ details{
 	text-align: center;
 	color: var(--browser_tx_clr);
 	padding: 3px;
+	cursor: auto;
 }
 
 
@@ -198,4 +199,16 @@ details{
 	display: inline-block;
 	content: "";
 	background-color: var(--clr_picker_bgcolor);
+}
+
+
+
+
+.colorPickerButton{
+	display: inline-block;
+	width: 2em;
+	height: 2em;
+	cursor: pointer;
+	border: 1px solid black;
+	border-radius: 2px;
 }

@@ -56,7 +56,7 @@ function setDefaults(storage){
 	if(!storage.hasOwnProperty("sendUsername"))                              storage.sendUsername = _("sendUsername").checked;
 	if(!storage.hasOwnProperty("rememberPostHistory"))                       storage.rememberPostHistory = document.querySelector("[name='rememberPostHistoryRadio']:checked")?.value || "permanently";
 
-	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnBaseColorCustom"))    storage.advSet_sendbtn_clrs_btnBaseColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnBaseColorCustom").value) || _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnBaseColorCustom"))    storage.advSet_sendbtn_clrs_btnBaseColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnBaseColorCustom").style.backgroundColor) || _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
 	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnPressedColorCustom")) storage.advSet_sendbtn_clrs_btnPressedColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnPressedColorCustom").value) || _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
 	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnSentColorCustom"))    storage.advSet_sendbtn_clrs_btnSentColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnSentColorCustom").value) || _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
 	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnTextColorCustom"))    storage.advSet_sendbtn_clrs_btnTextColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnTextColorCustom").value) || _("advSet_sendbtn_clrs_btnTextColorCustom").getAttribute("data-defval");
@@ -90,7 +90,7 @@ function initUIValues(storage){
 	document.querySelectorAll("[name='rememberPostHistoryRadio']").forEach(e => e.checked = false);
 	document.querySelector("[name='rememberPostHistoryRadio'][value='" + storage.rememberPostHistory + "']").checked = true;
 	
-	_("advSet_sendbtn_clrs_btnBaseColorCustom").value =                      storage.advSet_sendbtn_clrs_btnBaseColorCustom;
+	_("advSet_sendbtn_clrs_btnBaseColorCustom").style.backgroundColor =			storage.advSet_sendbtn_clrs_btnBaseColorCustom;
 	_("advSet_sendbtn_clrs_btnPressedColorCustom").value =                   storage.advSet_sendbtn_clrs_btnPressedColorCustom;
 	_("advSet_sendbtn_clrs_btnSentColorCustom").value =                      storage.advSet_sendbtn_clrs_btnSentColorCustom;
 	_("advSet_sendbtn_clrs_btnTextColorCustom").value =                      storage.advSet_sendbtn_clrs_btnTextColorCustom;
@@ -117,11 +117,11 @@ function checkHexColorValidity(hex){
 
 
 function registerListeners(...inputData){
-	inputData.forEach(([id, listener, prop]) => {
+	inputData.forEach(([id, listener, prop, isCustom]) => {
 		_(id).addEventListener(listener, (e) => {
 			e.target.disabled = true;
 			
-			browser.storage.local.set({[id]: e.target[prop]})
+			browser.storage.local.set({[id]: (isCustom ? e.detail : e.target[prop])})
 			.then(() => {e.target.disabled = false})
 			.catch(setErrorState);
 		});
@@ -182,7 +182,7 @@ registerListeners(
 	["sendOnDBClick", "click", "checked"],
 	["sendOnView", "click", "checked"],
 	["sendUsername", "click", "checked"],
-	["advSet_sendbtn_clrs_btnBaseColorCustom", "change", "value"],
+	["advSet_sendbtn_clrs_btnBaseColorCustom", "colorupdate", "", true],
 	["advSet_sendbtn_clrs_btnPressedColorCustom", "change", "value"],
 	["advSet_sendbtn_clrs_btnSentColorCustom", "change", "value"],
 	["advSet_sendbtn_clrs_btnTextColorCustom", "change", "value"],
