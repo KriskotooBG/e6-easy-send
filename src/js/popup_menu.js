@@ -297,11 +297,11 @@ _("advSet_sendbtn_clrs_defreset").addEventListener("click", (e) => {
 		_("advSet_sendbtn_clrs_btnSendagainColorCustom").style.backgroundColor = _("advSet_sendbtn_clrs_btnSendagainColorCustom").getAttribute("data-defval");
 		_("advSet_sendbtn_clrs_btnDeleteColorCustom").style.backgroundColor = _("advSet_sendbtn_clrs_btnDeleteColorCustom").getAttribute("data-defval");
 
-		_("advSet_sendbtn_clrs_btnBaseColorCustom").dispatchEvent(new Event("colorupdate"));
-		_("advSet_sendbtn_clrs_btnPressedColorCustom").dispatchEvent(new Event("colorupdate"));
-		_("advSet_sendbtn_clrs_btnSentColorCustom").dispatchEvent(new Event("colorupdate"));
-		_("advSet_sendbtn_clrs_btnSendagainColorCustom").dispatchEvent(new Event("colorupdate"));
-		_("advSet_sendbtn_clrs_btnDeleteColorCustom").dispatchEvent(new Event("colorupdate"));
+		_("advSet_sendbtn_clrs_btnBaseColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnBaseColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnPressedColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnPressedColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnSentColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnSentColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnSendagainColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnSendagainColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnDeleteColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnDeleteColorCustom").style.backgroundColor)}));
 	});
 });
 
