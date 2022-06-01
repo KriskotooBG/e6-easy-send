@@ -37,7 +37,7 @@ const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundC
 
 
 	const storedSettings = await browser.storage.local.get() || {};
-	storedSettings.sv = 2;
+	storedSettings.sv = 3;
 
 	setDefaults(storedSettings);
 	initUIValues(storedSettings);
@@ -49,79 +49,81 @@ const setErrorState = (msg, clr = "#ad2626") => {document.body.style.backgroundC
 
 
 function setDefaults(storage){
-	if(!storage.hasOwnProperty("webhookURL"))                                storage.webhookURL = "";
-	if(!storage.hasOwnProperty("sendAs"))                                    storage.sendAs = (_("sendAsEmbed").checked ? "embed" : "text");
-	if(!storage.hasOwnProperty("sendOnDBClick"))                             storage.sendOnDBClick = _("sendOnDBClick").checked;
-	if(!storage.hasOwnProperty("sendOnView"))                                storage.sendOnView = _("sendOnView").checked;
-	if(!storage.hasOwnProperty("sendUsername"))                              storage.sendUsername = _("sendUsername").checked;
-	if(!storage.hasOwnProperty("rememberPostHistory"))                       storage.rememberPostHistory = document.querySelector("[name='rememberPostHistoryRadio']:checked")?.value || "permanently";
+	if(!storage.hasOwnProperty("webhookURL"))											storage.webhookURL = "";
+	if(!storage.hasOwnProperty("sendAs"))												storage.sendAs = (_("sendAsEmbed").checked ? "embed" : "text");
+	if(!storage.hasOwnProperty("sendOnDBClick"))										storage.sendOnDBClick = _("sendOnDBClick").checked;
+	if(!storage.hasOwnProperty("sendOnView"))											storage.sendOnView = _("sendOnView").checked;
+	if(!storage.hasOwnProperty("sendUsername"))											storage.sendUsername = _("sendUsername").checked;
+	if(!storage.hasOwnProperty("rememberPostHistory"))									storage.rememberPostHistory = document.querySelector("[name='rememberPostHistoryRadio']:checked")?.value || "permanently";
 
-	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnBaseColorCustom"))    storage.advSet_sendbtn_clrs_btnBaseColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnBaseColorCustom").value) || _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
-	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnPressedColorCustom")) storage.advSet_sendbtn_clrs_btnPressedColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnPressedColorCustom").value) || _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
-	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnSentColorCustom"))    storage.advSet_sendbtn_clrs_btnSentColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnSentColorCustom").value) || _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
-	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnTextColorCustom"))    storage.advSet_sendbtn_clrs_btnTextColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnTextColorCustom").value) || _("advSet_sendbtn_clrs_btnTextColorCustom").getAttribute("data-defval");
-	if(!storage.hasOwnProperty("advSet_sendbtn_baseText"))                   storage.advSet_sendbtn_baseText = _("advSet_sendbtn_baseText").value || _("advSet_sendbtn_baseText").getAttribute("data-defval");
-	if(!storage.hasOwnProperty("advSet_sendbtn_baseTextSent"))               storage.advSet_sendbtn_baseTextSent = _("advSet_sendbtn_baseTextSent").value || _("advSet_sendbtn_baseTextSent").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnBaseColorCustom"))				storage.advSet_sendbtn_clrs_btnBaseColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnBaseColorCustom").style.backgroundColor) || _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnPressedColorCustom"))			storage.advSet_sendbtn_clrs_btnPressedColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnPressedColorCustom").style.backgroundColor) || _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnSentColorCustom"))				storage.advSet_sendbtn_clrs_btnSentColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnSentColorCustom").style.backgroundColor) || _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnSendagainColorCustom"))			storage.advSet_sendbtn_clrs_btnSendagainColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnSendagainColorCustom").style.backgroundColor) || _("advSet_sendbtn_clrs_btnSendagainColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_clrs_btnDeleteColorCustom"))				storage.advSet_sendbtn_clrs_btnDeleteColorCustom = checkHexColorValidity(_("advSet_sendbtn_clrs_btnDeleteColorCustom").style.backgroundColor) || _("advSet_sendbtn_clrs_btnDeleteColorCustom").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_baseText"))								storage.advSet_sendbtn_baseText = _("advSet_sendbtn_baseText").value || _("advSet_sendbtn_baseText").getAttribute("data-defval");
+	if(!storage.hasOwnProperty("advSet_sendbtn_baseTextSent"))							storage.advSet_sendbtn_baseTextSent = _("advSet_sendbtn_baseTextSent").value || _("advSet_sendbtn_baseTextSent").getAttribute("data-defval");
 	
+	if(!storage.hasOwnProperty("advSet_webhook_displayname"))							storage.advSet_webhook_displayname = _("advSet_webhook_displayname").value || _("advSet_webhook_displayname").getAttribute("data-defval");
 
-	if(!storage.hasOwnProperty("advSet_webhook_displayname"))                storage.advSet_webhook_displayname = _("advSet_webhook_displayname").value || _("advSet_webhook_displayname").getAttribute("data-defval");
+
 	if(!storage.hasOwnProperty("advSet_webhook_displayColor")){
-		const checked = (_("advSet_webhook_colorSelector_default").checked ? "default" : _("advSet_webhook_colorSelector_random").checked ? "random" : _("advSet_webhook_colorSelector_custom").checked ? "custom" : "default");
-		let val = checked;
+		let finalVal = document.querySelector("input[name='advSetWebhookColorRadio']:checked")?.value || "default";
 
-		if(checked == "custom"){
-			_("advSet_webhook_colorSelector_custom_input").disabled = false;
-			val = _("advSet_webhook_colorSelector_custom_input").value;
+		if(finalVal == "custom"){
+			_("advSet_webhook_colorSelector_custom_input").removeAttribute("data-disabled");
+			finalVal = checkHexColorValidity(_("advSet_webhook_colorSelector_custom_input").style.backgroundColor) || _("advSet_webhook_colorSelector_custom_input").getAttribute("data-defval");
 		}
-		else _("advSet_webhook_colorSelector_custom_input").disabled = true;
-		storage.advSet_webhook_displayColor = val;
+		else _("advSet_webhook_colorSelector_custom_input").setAttribute("data-disabled", "true");
+		storage.advSet_webhook_displayColor = finalVal;
 	} 
 }
 
 
 function initUIValues(storage){
-	_("webhookURL").value =                                                  storage.webhookURL;
-	_("sendAsEmbed").checked =                                               storage.sendAs === "embed";
-	_("sendAsText").checked =                                                storage.sendAs === "text";
-	_("sendOnDBClick").checked =                                             storage.sendOnDBClick;
-	_("sendOnView").checked =                                                storage.sendOnView;
-	_("sendUsername").checked =                                              storage.sendUsername;
+	_("webhookURL").value =																storage.webhookURL;
+	_("sendAsEmbed").checked =															storage.sendAs === "embed";
+	_("sendAsText").checked =															storage.sendAs === "text";
+	_("sendOnDBClick").checked =														storage.sendOnDBClick;
+	_("sendOnView").checked =															storage.sendOnView;
+	_("sendUsername").checked =															storage.sendUsername;
 
 	document.querySelectorAll("[name='rememberPostHistoryRadio']").forEach(e => e.checked = false);
 	document.querySelector("[name='rememberPostHistoryRadio'][value='" + storage.rememberPostHistory + "']").checked = true;
 	
-	_("advSet_sendbtn_clrs_btnBaseColorCustom").value =                      storage.advSet_sendbtn_clrs_btnBaseColorCustom;
-	_("advSet_sendbtn_clrs_btnPressedColorCustom").value =                   storage.advSet_sendbtn_clrs_btnPressedColorCustom;
-	_("advSet_sendbtn_clrs_btnSentColorCustom").value =                      storage.advSet_sendbtn_clrs_btnSentColorCustom;
-	_("advSet_sendbtn_clrs_btnTextColorCustom").value =                      storage.advSet_sendbtn_clrs_btnTextColorCustom;
-	_("advSet_sendbtn_baseText").value =                                     storage.advSet_sendbtn_baseText;
-	_("advSet_sendbtn_baseTextSent").value =                                 storage.advSet_sendbtn_baseTextSent;
+	_("advSet_sendbtn_clrs_btnBaseColorCustom").style.backgroundColor =					storage.advSet_sendbtn_clrs_btnBaseColorCustom;
+	_("advSet_sendbtn_clrs_btnPressedColorCustom").style.backgroundColor =				storage.advSet_sendbtn_clrs_btnPressedColorCustom;
+	_("advSet_sendbtn_clrs_btnSentColorCustom").style.backgroundColor =					storage.advSet_sendbtn_clrs_btnSentColorCustom;
+	_("advSet_sendbtn_clrs_btnSendagainColorCustom").style.backgroundColor =			storage.advSet_sendbtn_clrs_btnSendagainColorCustom;
+	_("advSet_sendbtn_clrs_btnDeleteColorCustom").style.backgroundColor =				storage.advSet_sendbtn_clrs_btnDeleteColorCustom;
+	_("advSet_sendbtn_baseText").value =												storage.advSet_sendbtn_baseText;
+	_("advSet_sendbtn_baseTextSent").value =											storage.advSet_sendbtn_baseTextSent;
 
-	_("advSet_webhook_displayname").value =                                  storage.advSet_webhook_displayname;
-	_("advSet_webhook_colorSelector_default").checked =                      storage.advSet_webhook_displayColor === "default";
-	_("advSet_webhook_colorSelector_random").checked =                       storage.advSet_webhook_displayColor === "random";
+	_("advSet_webhook_displayname").value =												storage.advSet_webhook_displayname;
+	_("advSet_webhook_colorSelector_default").checked =									storage.advSet_webhook_displayColor === "default";
+	_("advSet_webhook_colorSelector_random").checked =									storage.advSet_webhook_displayColor === "random";
 
 	if(storage.advSet_webhook_displayColor !== "default" && storage.advSet_webhook_displayColor !== "random"){
 		_("advSet_webhook_colorSelector_custom").checked = true;
-		_("advSet_webhook_colorSelector_custom_input").disabled = false;
-		_("advSet_webhook_colorSelector_custom_input").value =               storage.advSet_webhook_displayColor;
+		_("advSet_webhook_colorSelector_custom_input").removeAttribute("data-disabled");
+		_("advSet_webhook_colorSelector_custom_input").style.backgroundColor =			storage.advSet_webhook_displayColor;
 	}
 }
 
 
 
 
-function checkHexColorValidity(hex){
-	return /^#([0-9a-f]{3}){1,2}$/i.test(hex) ? hex : null;
+function checkHexColorValidity(hex, def = null){
+	return /^#([0-9a-f]{3}){1,2}$/i.test(hex) ? hex : /^#([0-9a-f]{2}){4}$/i.test(hex) ? hex : def;
 }
 
 
 function registerListeners(...inputData){
-	inputData.forEach(([id, listener, prop]) => {
+	inputData.forEach(([id, listener, prop, isCustom]) => {
 		_(id).addEventListener(listener, (e) => {
 			e.target.disabled = true;
 			
-			browser.storage.local.set({[id]: e.target[prop]})
+			browser.storage.local.set({[id]: (isCustom ? e.detail : e.target[prop])})
 			.then(() => {e.target.disabled = false})
 			.catch(setErrorState);
 		});
@@ -182,10 +184,11 @@ registerListeners(
 	["sendOnDBClick", "click", "checked"],
 	["sendOnView", "click", "checked"],
 	["sendUsername", "click", "checked"],
-	["advSet_sendbtn_clrs_btnBaseColorCustom", "change", "value"],
-	["advSet_sendbtn_clrs_btnPressedColorCustom", "change", "value"],
-	["advSet_sendbtn_clrs_btnSentColorCustom", "change", "value"],
-	["advSet_sendbtn_clrs_btnTextColorCustom", "change", "value"],
+	["advSet_sendbtn_clrs_btnBaseColorCustom", "colorupdate", "", true],
+	["advSet_sendbtn_clrs_btnPressedColorCustom", "colorupdate", "", true],
+	["advSet_sendbtn_clrs_btnSentColorCustom", "colorupdate", "", true],
+	["advSet_sendbtn_clrs_btnSendagainColorCustom", "colorupdate", "", true],
+	["advSet_sendbtn_clrs_btnDeleteColorCustom", "colorupdate", "", true],
 	["advSet_sendbtn_baseText", "change", "value"],
 	["advSet_sendbtn_baseTextSent", "change", "value"],
 	["advSet_webhook_displayname", "change", "value"]
@@ -230,16 +233,16 @@ const onWebhookClrChange = (e) => {
 	_("advSet_webhook_colorSelector_default").disabled = true;
 	_("advSet_webhook_colorSelector_random").disabled = true;
 	_("advSet_webhook_colorSelector_custom").disabled = true;
+	_("advSet_webhook_colorSelector_custom_input").setAttribute("data-disabled", "true");
 
-	let val = "default";
 
 
-	_("advSet_webhook_colorSelector_custom_input").disabled = true;
-	val = e.target.value
+	let val = e.target?.value || "default";
+	if(val == "custom"){
+		_("advSet_webhook_colorSelector_custom_input").removeAttribute("data-disabled");
+		_("advSet_webhook_colorSelector_custom_input").style.backgroundColor = _("advSet_webhook_colorSelector_custom_input").getAttribute("data-defval");
+		val = _("advSet_webhook_colorSelector_custom_input").style?.backgroundColor || "default";
 
-	if(e.target.value == "custom"){
-		_("advSet_webhook_colorSelector_custom_input").disabled = false;
-		val = checkHexColorValidity(_("advSet_webhook_colorSelector_custom_input").value) ? _("advSet_webhook_colorSelector_custom_input").value : "default";
 	}
 
 
@@ -257,18 +260,17 @@ _("advSet_webhook_colorSelector_custom").addEventListener("click", onWebhookClrC
 
 
 
-_("advSet_webhook_colorSelector_custom_input").addEventListener("change", (e) => {
-	e.target.disabled = true;
+_("advSet_webhook_colorSelector_custom_input").addEventListener("colorupdate", (e) => {
 	if(!_("advSet_webhook_colorSelector_custom").checked) return;
 
-	if(checkHexColorValidity(e.target.value)){
-		browser.storage.local.set({advSet_webhook_displayColor: e.target.value})
-		.then(() => {e.target.disabled = false})
+
+	if(checkHexColorValidity(e.detail)){
+		browser.storage.local.set({advSet_webhook_displayColor: e.detail})
+		.then(() => {})
 		.catch(setErrorState);
 	}
 	else{
-		e.target.disabled = false;
-		e.target.value = _("advSet_webhook_colorSelector_custom_input").getAttribute("data-defval")
+		_("advSet_webhook_colorSelector_custom_input").style.backgroundColor = _("advSet_webhook_colorSelector_custom_input").getAttribute("data-defval")
 		_("advSet_webhook_colorSelector_default").click();
 	}
 });
@@ -289,15 +291,17 @@ _("rememberPostHistory_permanently_deleteStorage").addEventListener("click", (e)
 
 _("advSet_sendbtn_clrs_defreset").addEventListener("click", (e) => {
 	hyperlinkConfirmation("advSet_sendbtn_clrs_defreset", "Are you sure?", "Defaults loaded.", () => {
-		_("advSet_sendbtn_clrs_btnBaseColorCustom").value = _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
-		_("advSet_sendbtn_clrs_btnPressedColorCustom").value = _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
-		_("advSet_sendbtn_clrs_btnSentColorCustom").value = _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
-		_("advSet_sendbtn_clrs_btnTextColorCustom").value = _("advSet_sendbtn_clrs_btnTextColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnBaseColorCustom").style.backgroundColor = _("advSet_sendbtn_clrs_btnBaseColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnPressedColorCustom").style.backgroundColor = _("advSet_sendbtn_clrs_btnPressedColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnSentColorCustom").style.backgroundColor = _("advSet_sendbtn_clrs_btnSentColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnSendagainColorCustom").style.backgroundColor = _("advSet_sendbtn_clrs_btnSendagainColorCustom").getAttribute("data-defval");
+		_("advSet_sendbtn_clrs_btnDeleteColorCustom").style.backgroundColor = _("advSet_sendbtn_clrs_btnDeleteColorCustom").getAttribute("data-defval");
 
-		_("advSet_sendbtn_clrs_btnBaseColorCustom").dispatchEvent(new Event("change"));
-		_("advSet_sendbtn_clrs_btnPressedColorCustom").dispatchEvent(new Event("change"));
-		_("advSet_sendbtn_clrs_btnSentColorCustom").dispatchEvent(new Event("change"));
-		_("advSet_sendbtn_clrs_btnTextColorCustom").dispatchEvent(new Event("change"));
+		_("advSet_sendbtn_clrs_btnBaseColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnBaseColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnPressedColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnPressedColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnSentColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnSentColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnSendagainColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnSendagainColorCustom").style.backgroundColor)}));
+		_("advSet_sendbtn_clrs_btnDeleteColorCustom").dispatchEvent(new CustomEvent("colorupdate", {detail: CSS_RGBAToHEX(_("advSet_sendbtn_clrs_btnDeleteColorCustom").style.backgroundColor)}));
 	});
 });
 
