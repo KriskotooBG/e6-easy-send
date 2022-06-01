@@ -28,9 +28,10 @@ let postState = 1;                     //1: init;  2: sending;  3: sent ok!;  4:
 (async () => {
 	const settingsOBJ = (await browser.storage.local.get()) || {};
 	
-	if(!settingsOBJ.sv || settingsOBJ.sv < 2){
+	if(!settingsOBJ.sv || settingsOBJ.sv < 3){
 		disabled = true;
-		if(settingsOBJ.sv == 1) createModalBox("E6 Easy Send Update!", "Hello, An update has been installed for E6 Easy Send!<br>Please open the extension menu to check out the new features!<br><br><i>this message will never appear after the extension menu has been opened at least once.</i>")
+		if(settingsOBJ.sv == 1) createModalBox("E6 Easy Send Update!", "Hello, An update has been installed for E6 Easy Send!<br>Please open the extension menu to check out the new features!<br><br><i>this message will never appear after the extension menu has been opened at least once.</i>");
+		else if(settingsOBJ.sv == 2) createModalBox("E6 Easy Send Update!", "Hey! An update has been installed for E6 Easy Send!<br>Please open the extension menu to check out the new features!<br>Added new color picker & new customization options!<br><br><i>this message will never appear after the extension menu has been opened at least once.</i>");
 		else createModalBox("Thanks for installing me!", "To enable E6 Easy Send, please open the menu by clicking its icon in the top-right of the browser;<br>Paste a Discord webhook URL in the input box and refresh the page!<br><br><i>this message will never appear after the extension menu has been opened at least once.</i>");
 		return;
 	}
@@ -45,9 +46,10 @@ let postState = 1;                     //1: init;  2: sending;  3: sent ok!;  4:
 
 	createAndAppendCustomStyles(
 		settingsOBJ.advSet_sendbtn_clrs_btnBaseColorCustom,
-		settingsOBJ.advSet_sendbtn_clrs_btnTextColorCustom,
 		settingsOBJ.advSet_sendbtn_clrs_btnPressedColorCustom,
-		settingsOBJ.advSet_sendbtn_clrs_btnSentColorCustom
+		settingsOBJ.advSet_sendbtn_clrs_btnSentColorCustom,
+		settingsOBJ.advSet_sendbtn_clrs_btnSendagainColorCustom,
+		settingsOBJ.advSet_sendbtn_clrs_btnDeleteColorCustom
 	);
 
 
@@ -58,7 +60,7 @@ let postState = 1;                     //1: init;  2: sending;  3: sent ok!;  4:
 		createAndAppendSendButton(settingsOBJ.advSet_sendbtn_baseText);
 
 
-		if(settingsOBJ.rememberPostHistory == "off"){             storage = null; sessionStorage.removeItem("e6es_ph");}   //clear if setting got changed while script was not loaded.
+		if(settingsOBJ.rememberPostHistory == "off"){             storage = null; sessionStorage.removeItem("e6es_ph");}   //clear session storage if setting got changed while script was not loaded.
 		else if(settingsOBJ.rememberPostHistory == "permanently") storage = localStorage;
 		else if(settingsOBJ.rememberPostHistory == "session")     storage = sessionStorage;
 
@@ -81,7 +83,7 @@ let postState = 1;                     //1: init;  2: sending;  3: sent ok!;  4:
 
 
 
-function displayNativeNoticeAsError(msg){     //this function highjacks #notice from e621/e926. Not a very good approach, but good enough for he rare error-cases
+function displayNativeNoticeAsError(msg){     //this function highjacks #notice from e621/e926. Not a very good approach, but good enough for the rare error-cases
 	if(_("notice")){
 		_("notice").classList.remove("ui-state-highlight");
 		_("notice").classList.add("ui-state-error"); //classes from e621/e926.
@@ -96,7 +98,7 @@ function displayNativeNoticeAsError(msg){     //this function highjacks #notice 
 		);
 		_("notice").style.display = "";
 	}
-	else alert(msg);                          //terrible, should never happen.
+	else alert("e6 easy send error: " + msg);                          //terrible, should never happen.
 }
 
 
@@ -146,36 +148,38 @@ function createModalBox(title, description, width = "auto", height = "auto"){
 
 
 
-function createAndAppendCustomStyles(baseColor, textColor, hoverColor, successColor){
+function createAndAppendCustomStyles(baseColor, hoverColor, successColor, sendAgainColor, deleteColor){
 	const customStyles = document.createElement("style");
 	customStyles.setAttribute("id", "e6easysend_custom_styles");
 	customStyles.textContent =
 		`.e6easysend_buttonSend{
 			cursor: pointer;
 			background-color: ${checkHexColorValidity(baseColor, "#5865F2")};
-			color: ${checkHexColorValidity(textColor, "#ffffff")};
+			color: ${getColorLuminocity(checkHexColorValidity(baseColor, "#5865F2"), true) ? "#000000" : "#ffffff"};
 		}
 		.e6easysend_buttonSend:hover{
 			background-color: ${checkHexColorValidity(hoverColor, "#2e39ab")};
+			color: ${getColorLuminocity(checkHexColorValidity(hoverColor, "#2e39ab"), true) ? "#000000" : "#ffffff"};
 		}
 		.e6easysend_buttonSend[data-state="sending"]{
 			background-color: #303030;
 			color: #ffffff;
 		}
 		.e6easysend_buttonSend[data-state="delete"]{
-			background-color: #a11a29;
-			color: #ffffff;
+			background-color: ${checkHexColorValidity(deleteColor, "#f03f09ff")};
+			color: ${getColorLuminocity(checkHexColorValidity(deleteColor, "#f03f09ff"), true) ? "#000000" : "#ffffff"};
 		}
 		.e6easysend_buttonSend[data-state="true"]{
-			background-color: ${checkHexColorValidity(successColor, "#37ff77")};
+			background-color: ${checkHexColorValidity(successColor, "#1b853cff")};
+			color: ${getColorLuminocity(checkHexColorValidity(successColor, "#1b853cff"), true) ? "#000000" : "#ffffff"};
 		}
 		.e6easysend_buttonSend[data-state="false"]{
 			background-color: #a83232;
 			color: #ffffff;
 		}
 		.e6easysend_buttonSend[data-state="sendagain"]{
-			background-color: #a11a29;
-			color: #ffffff;
+			background-color: ${checkHexColorValidity(sendAgainColor, "#32e26dff")};
+			color: ${getColorLuminocity(checkHexColorValidity(sendAgainColor, "#32e26dff"), true) ? "#000000" : "#ffffff"};
 		}`;
 	document.getElementsByTagName("head")[0].appendChild(customStyles);
 }
@@ -199,7 +203,19 @@ function createAndAppendSendButton(text = "Send to Discord"){
 
 
 function checkHexColorValidity(hex, def = null){
-	return /^#([0-9a-f]{3}){1,2}$/i.test(hex) ? hex : def;
+	return /^#([0-9a-f]{3}){1,2}$/i.test(hex) ? hex : /^#([0-9a-f]{2}){4}$/i.test(hex) ? hex : def;
+}
+
+function getColorLuminocity(hex, darknessCheck){
+	let rgb = hex.substring(1).split("");
+	let r, g, b;
+
+	if(rgb.length == 3 || rgb.length == 4) r = parseInt(rgb[0] + rgb[0], 16), g = parseInt(rgb[1] + rgb[1], 16), b = parseInt(rgb[2] + rgb[2], 16);
+	else if(rgb.length == 6 || rgb.length == 8) r = parseInt(rgb[0] + rgb[1], 16), g = parseInt(rgb[2] + rgb[3], 16), b = parseInt(rgb[4] + rgb[5], 16);
+	else throw new TypeError("Invalid hex color code given to getColorLuminocity");
+	
+	if(darknessCheck) return 0.2126 * r + 0.7152 * g + 0.0722 * b > 128 ? true : false;
+	else return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
 
@@ -283,7 +299,7 @@ async function sendPostToWebhook(){
 	}
 	webhookURLCache = settingsOBJ.webhookURL;
 
-
+	
 	try{
 		const postData = JSON.parse(_("image-container").getAttribute("data-post"));
 		const result = await sendToWebhook(
@@ -295,7 +311,7 @@ async function sendPostToWebhook(){
 			postData.fav_count,
 			(settingsOBJ.advSet_webhook_displayname || "E6 Easy Send"),
 			(settingsOBJ.sendAs || "text"),
-			(settingsOBJ.advSet_webhook_displayColor === "default" ? 9716272 : settingsOBJ.advSet_webhook_displayColor === "random" ? (Math.floor(Math.random() * 16777215)) : parseInt(checkHexColorValidity(settingsOBJ.advSet_webhook_displayColor, "#944230").substring(1), 16)),
+			(settingsOBJ.advSet_webhook_displayColor === "default" ? 9716272 : settingsOBJ.advSet_webhook_displayColor === "random" ? (Math.floor(Math.random() * 16777215)) : parseInt(checkHexColorValidity(settingsOBJ.advSet_webhook_displayColor.length > 7 ? settingsOBJ.advSet_webhook_displayColor.slice(0, -2) : settingsOBJ.advSet_webhook_displayColor, "#944230").substring(1), 16)),
 			(settingsOBJ.sendUsername ? (document.body.getAttribute("data-user-name") || "Anonymous") : null)
 		);
 
@@ -414,17 +430,24 @@ browser.storage.onChanged.addListener((changes, area) => {
 
 
 			case "advSet_sendbtn_clrs_btnBaseColorCustom":
-				_("e6easysend_custom_styles").sheet.cssRules[0].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#5865F2");
+				_("e6easysend_custom_styles").sheet.cssRules[0].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#5865F2ff");
+				_("e6easysend_custom_styles").sheet.cssRules[0].style.color = getColorLuminocity(checkHexColorValidity(changes[changedProp].newValue, "#5865F2ff"), true) ? "#000000" : "#ffffff"
 				break;
 			case "advSet_sendbtn_clrs_btnPressedColorCustom":
-				_("e6easysend_custom_styles").sheet.cssRules[1].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#2e39ab");
+				_("e6easysend_custom_styles").sheet.cssRules[1].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#2e39abff");
+				_("e6easysend_custom_styles").sheet.cssRules[1].style.color = getColorLuminocity(checkHexColorValidity(changes[changedProp].newValue, "#2e39abff"), true) ? "#000000" : "#ffffff"
+				break;
+			case "advSet_sendbtn_clrs_btnDeleteColorCustom":
+				_("e6easysend_custom_styles").sheet.cssRules[3].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#f03f09ff");
+				_("e6easysend_custom_styles").sheet.cssRules[3].style.color = getColorLuminocity(checkHexColorValidity(changes[changedProp].newValue, "#f03f09ff"), true) ? "#000000" : "#ffffff"
 				break;
 			case "advSet_sendbtn_clrs_btnSentColorCustom":
-				_("e6easysend_custom_styles").sheet.cssRules[4].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#1b853c");
+				_("e6easysend_custom_styles").sheet.cssRules[4].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#1b853cff");
+				_("e6easysend_custom_styles").sheet.cssRules[4].style.color = getColorLuminocity(checkHexColorValidity(changes[changedProp].newValue, "#1b853cff"), true) ? "#000000" : "#ffffff"
 				break;
-
-			case "advSet_sendbtn_clrs_btnTextColorCustom":
-				_("e6easysend_custom_styles").sheet.cssRules[0].style.color = checkHexColorValidity(changes[changedProp].newValue, "#ffffff");
+			case "advSet_sendbtn_clrs_btnSendagainColorCustom":
+				_("e6easysend_custom_styles").sheet.cssRules[6].style.backgroundColor = checkHexColorValidity(changes[changedProp].newValue, "#32e26dff");
+				_("e6easysend_custom_styles").sheet.cssRules[6].style.color = getColorLuminocity(checkHexColorValidity(changes[changedProp].newValue, "#32e26dff"), true) ? "#000000" : "#ffffff"
 				break;
 			
 			
