@@ -383,15 +383,16 @@ function RGBAToHEX(r,g,b,a){
 	return "#" + r.toString(16).padStart(2, "0") + g.toString(16).padStart(2, "0") + b.toString(16).padStart(2, "0") + (a !== undefined ? a.toString(16).padStart(2, "0") : "");
 }
 function CSS_RGBAToHEX(rgba){							//function from https://stackoverflow.com/a/3627747
-	return "#" + rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/)
-				.slice(1)
-				.map((v, i) => {
-					return (i == 3 ? Math.round(parseFloat(v) * 255) : parseFloat(v))
-					.toString(16)
-					.padStart(2, "0")
-					.replace("NaN", "")
-				}).join("");
-	
+	try{
+		return "#" + rgba.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d+\.{0,1}\d*))?\)$/)
+					.slice(1)
+					.map((v, i) => {
+						return (i == 3 ? Math.round(parseFloat(v) * 255) : parseFloat(v))
+						.toString(16)
+						.padStart(2, "0")
+						.replace("NaN", "")
+					}).join("");
+	} catch(e){return null}
 }
 function HEXToRGBA(hex){
 	if(hex.length != 7 && hex.length != 9) return [0, 0, 0, 0];
@@ -520,7 +521,9 @@ for(const btn of document.getElementsByClassName("colorPickerButton")){
 		if(e.target.getAttribute("data-disabled") == "true") return;
 		activeSelectorBTNID = e.target.id;
 
-		const c = CSS_RGBAToHEX(e.target.style.backgroundColor);
+		let c = CSS_RGBAToHEX(e.target.style?.backgroundColor);
+		c = c || e.target.getAttribute("data-defval");
+
 		openColorPickerPopup(c.length == 7 ? c + "ff" : c);
 	});
 }
