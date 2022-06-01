@@ -517,6 +517,7 @@ _hi.addEventListener("keyup", (e) => {
 
 for(const btn of document.getElementsByClassName("colorPickerButton")){
 	btn.addEventListener("click", (e) => {
+		if(e.target.getAttribute("data-disabled") == "true") return;
 		activeSelectorBTNID = e.target.id;
 
 		const c = CSS_RGBAToHEX(e.target.style.backgroundColor);
