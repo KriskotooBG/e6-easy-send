@@ -36,10 +36,10 @@
 						<canvas id="popupColorPickerCanvAlpha">.</canvas>
 					</div>
 					<div id="popupColorPickerInpsWrapper">
-						<div class="rgbinpWrapper">R   <input class="popupColorPickerValInp" id="popupColorPickerValInpR" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
-						<div class="rgbinpWrapper">G   <input class="popupColorPickerValInp" id="popupColorPickerValInpG" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
-						<div class="rgbinpWrapper">B   <input class="popupColorPickerValInp" id="popupColorPickerValInpB" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
-						<div class="rgbinpWrapper">A   <input class="popupColorPickerValInp" id="popupColorPickerValInpA" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
+						<div class="rgbinpWrapper"><span style="margin-right: .5em; width: 1.3ch; display: inline-block;">R</span><input class="popupColorPickerValInp" id="popupColorPickerValInpR" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
+						<div class="rgbinpWrapper"><span style="margin-right: .5em; width: 1.3ch; display: inline-block;">G</span><input class="popupColorPickerValInp" id="popupColorPickerValInpG" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
+						<div class="rgbinpWrapper"><span style="margin-right: .5em; width: 1.3ch; display: inline-block;">B</span><input class="popupColorPickerValInp" id="popupColorPickerValInpB" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
+						<div class="rgbinpWrapper"><span style="margin-right: .5em; width: 1.3ch; display: inline-block;">A</span><input class="popupColorPickerValInp" id="popupColorPickerValInpA" type="text" accept="0-9{1,2,3}" maxlength="3" value="0"></div>
 					</div>
 				</div>
 				<div id="popupColorPickerFooter">
@@ -132,21 +132,24 @@
 					<summary>Colors</summary>
 				
 					<div>
-						<!--<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnBaseColorCustom" value="#5865F2" data-defval="#5865F2">-->
-						<div id="advSet_sendbtn_clrs_btnBaseColorCustom" class="colorPickerButton" data-defval="#5865F2"></div>
+						<div id="advSet_sendbtn_clrs_btnBaseColorCustom" class="colorPickerButton" role="button" data-defval="#5865F2"></div>
 						<label for="advSet_sendbtn_clrs_btnBaseColorCustom">Send button color</label>
 					</div>
 					<div>
-						<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnPressedColorCustom" value="#2e39ab" data-defval="#2e39ab">
+						<div id="advSet_sendbtn_clrs_btnPressedColorCustom" class="colorPickerButton" role="button" data-defval="#2e39abff"></div>
 						<label for="advSet_sendbtn_clrs_btnPressedColorCustom">Send button color - pressed/hover</label>
 					</div>
 					<div>
-						<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnSentColorCustom" value="#1b853c" data-defval="#1b853c">
+						<div id="advSet_sendbtn_clrs_btnSentColorCustom" class="colorPickerButton" role="button" data-defval="#1b853cff"></div>
 						<label for="advSet_sendbtn_clrs_btnSentColorCustom">Send button color - sent successfully</label>
 					</div>
 					<div>
-						<input type="text" minlength="7" maxlength="7" size="7" id="advSet_sendbtn_clrs_btnTextColorCustom" value="#ffffff" data-defval="#ffffff">
-						<label for="advSet_sendbtn_clrs_btnTextColorCustom">Send button text color</label>
+						<div id="advSet_sendbtn_clrs_btnSendagainColorCustom" class="colorPickerButton" role="button" data-defval="#32e26dff"></div>
+						<label for="advSet_sendbtn_clrs_btnSendagainColorCustom">Send button color - send again</label>
+					</div>
+					<div>
+						<div id="advSet_sendbtn_clrs_btnDeleteColorCustom" class="colorPickerButton" role="button" data-defval="#f03f09ff"></div>
+						<label for="advSet_sendbtn_clrs_btnDeleteColorCustom">Send button color - Delete</label>
 					</div>
 
 					<span style="margin-top: .2em;" class="anchorStyledText" id="advSet_sendbtn_clrs_defreset">Reset Defaults</span>
@@ -182,9 +185,11 @@
 					<label for="advSet_webhook_colorSelector_random">Random</label>
 				</div>
 				<div style="margin-left: .5em;">
-					<input type="radio" name="advSetWebhookColorRadio" id="advSet_webhook_colorSelector_custom" value="custom">
-					<label for="advSet_webhook_colorSelector_custom">Custom: </label>
-					<input type="text" minlength="7" maxlength="7" size="7" id="advSet_webhook_colorSelector_custom_input" value="#944230"  data-defval="#944230" disabled>
+					<div>
+						<input type="radio" name="advSetWebhookColorRadio" id="advSet_webhook_colorSelector_custom" value="custom">
+						<label for="advSet_webhook_colorSelector_custom_input">Custom: </label>
+						<div id="advSet_webhook_colorSelector_custom_input" class="colorPickerButton" role="button" data-defval="#944230ff" data-disabled="true"></div>
+					</div>
 				</div>
 				<span style="margin-top: .2em;" class="anchorStyledText" id="advSet_webhook_defreset">Reset Defaults</span>
 			</details>
